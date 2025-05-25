@@ -1,6 +1,6 @@
 # Clothes Picker - Raspberry Pi Zero 2 W
 
-This is a *work in progress* standalone clothes picking assistant built for the Raspberry Pi Zero 2 W. The goal is to create a personal styling tool that displays clothing options (layer, top, bottom) and allows browsing, filtering, and saving favorite outfits. The system launches automatically on boot and is designed with a minimal, icon-friendly UI for intuitive use.
+This is a _work in progress_ standalone clothes picking assistant built for the Raspberry Pi Zero 2 W. The goal is to create a personal styling tool that displays clothing options (layer, top, bottom) and allows browsing, filtering, and saving favorite outfits. The system launches automatically on boot and is designed with a minimal, icon-friendly UI for intuitive use.
 
 ---
 

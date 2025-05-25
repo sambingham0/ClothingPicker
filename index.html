@@ -1,83 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clothes Picker Web App</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- CATEGORY / FILTER DROPDOWN -->
-  <div id="top-bar">
-    <!-- <label for="category-select">Category:</label> -->
-    <select id="category-select">
-      <option value="athletic">Athletic</option>
-      <option value="casual" selected>Casual</option>
-      <option value="sleep">Sleep</option>
-      <option value="favorites">Favorites</option>
-    </select>
-    <button id="random-btn">Random</button>
-    <button id="toggle-layer-btn">Remove Layer</button>
-    <button id="save-preset-btn">Save Preset</button>
-    <button id="upload-btn">Upload Image</button>
-  </div>
-
-  
-
-  <!-- MAIN GRID: 3 Columns (layers / tops / bottoms) -->
-  <div id="picker-grid">
-    <!-- Layers Column -->
-    <div class="section-container" data-section="layers">
-      <button class="cycle-btn up-btn" data-section="layers">▲</button>
-      <div class="image-viewport" id="image-layers">
-        <!-- JS will insert <img> or “(Hidden)” text here -->
-      </div>
-      <button class="cycle-btn down-btn" data-section="layers">▼</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+    <title>Clothes Picker Web App</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="styles/mobile.css" />
+  </head>
+  <body>
+    <!-- CATEGORY / FILTER DROPDOWN -->
+    <div id="top-bar">
+      <!-- <label for="category-select">Category:</label> -->
+      <select id="category-select">
+        <option value="athletic">Athletic</option>
+        <option value="casual" selected>Casual</option>
+        <option value="sleep">Sleep</option>
+        <option value="favorites">Favorites</option>
+      </select>
+      <button id="random-btn">Random</button>
+      <button id="toggle-layer-btn">Remove Layer</button>
+      <button id="save-preset-btn">Save Preset</button>
+      <button id="upload-btn">Upload Image</button>
+      <button id="manage-presets-btn">Manage Presets</button>
     </div>
 
-    <!-- Tops Column -->
-    <div class="section-container" data-section="tops">
-      <button class="cycle-btn up-btn" data-section="tops">▲</button>
-      <div class="image-viewport" id="image-tops"></div>
-      <button class="cycle-btn down-btn" data-section="tops">▼</button>
-    </div>
-
-    <!-- Bottoms Column -->
-    <div class="section-container" data-section="bottoms">
-      <button class="cycle-btn up-btn" data-section="bottoms">▲</button>
-      <div class="image-viewport" id="image-bottoms"></div>
-      <button class="cycle-btn down-btn" data-section="bottoms">▼</button>
-    </div>
-  </div>
-
-  <!-- FOOTER FOR “No images” OR DEBUG MESSAGES -->
-  <div id="footer-msg"></div>
-
-  <!-- Upload Modal -->
-  <div id="upload-modal" class="modal">
-    <div class="modal-content">
-      <h2>Upload Image</h2>
-      <form id="upload-form">
-        <select name="category" required>
-          <option value="casual">Casual</option>
-          <option value="athletic">Athletic</option>
-          <option value="sleep">Sleep</option>
-        </select>
-        <select name="section" required>
-          <option value="tops">Top</option>
-          <option value="bottoms">Bottom</option>
-          <option value="layers">Layer</option>
-        </select>
-        <input type="file" name="image" accept="image/*" required>
-        <div class="modal-buttons">
-          <button type="submit">Upload</button>
-          <button type="button" onclick="closeUploadModal()">Cancel</button>
+    <!-- MAIN GRID: 3 Columns (layers / tops / bottoms) -->
+    <div id="picker-grid">
+      <!-- Layers Column -->
+      <div class="section-container" data-section="layers">
+        <button class="cycle-btn up-btn" data-section="layers">▲</button>
+        <div class="image-viewport" id="layers-viewport">
+          <img src="" alt="layers" loading="lazy" />
         </div>
-      </form>
-    </div>
-  </div>
+        <button class="cycle-btn down-btn" data-section="layers">▼</button>
+      </div>
 
-  <script src="script.js"></script>
-</body>
+      <!-- Tops Column -->
+      <div class="section-container" data-section="tops">
+        <button class="cycle-btn up-btn" data-section="tops">▲</button>
+        <div class="image-viewport" id="tops-viewport">
+          <img src="" alt="tops" loading="lazy" />
+        </div>
+        <button class="cycle-btn down-btn" data-section="tops">▼</button>
+      </div>
+
+      <!-- Bottoms Column -->
+      <div class="section-container" data-section="bottoms">
+        <button class="cycle-btn up-btn" data-section="bottoms">▲</button>
+        <div class="image-viewport" id="bottoms-viewport">
+          <img src="" alt="bottoms" loading="lazy" />
+        </div>
+        <button class="cycle-btn down-btn" data-section="bottoms">▼</button>
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR ONLY MOBILE -->
+    <div id="bottom-bar">
+      <button id="upload-btn-mobile">Upload Image</button>
+      <button id="manage-presets-btn-mobile">Manage Presets</button>
+    </div>
+
+    <!-- FOOTER FOR “No images” OR DEBUG MESSAGES -->
+    <div id="footer-msg"></div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="modal">
+      <div class="modal-content">
+        <h2>Upload Image</h2>
+        <form id="upload-form">
+          <select name="category" required>
+            <option value="casual">Casual</option>
+            <option value="athletic">Athletic</option>
+            <option value="sleep">Sleep</option>
+          </select>
+          <select name="section" required>
+            <option value="tops">Top</option>
+            <option value="bottoms">Bottom</option>
+            <option value="layers">Layer</option>
+          </select>
+          <input type="file" name="image" accept="image/*" required />
+          <div class="modal-buttons">
+            <button type="submit">Upload</button>
+            <button type="button" onclick="closeUploadModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add this after your upload modal in index.html -->
+    <div id="manage-presets-modal" class="modal">
+      <div class="modal-content">
+        <h2>Manage Favorite Presets</h2>
+        <ul id="presets-list"></ul>
+        <div class="modal-buttons">
+          <button type="button" onclick="closeManagePresetsModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="scripts/script.js"></script>
+  </body>
 </html>
