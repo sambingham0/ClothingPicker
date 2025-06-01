@@ -73,7 +73,7 @@ async function renderCurrentImages() {
     // Show the current favorite preset
     const preset = state.favoritesPresets[state.favoritesIndex];
     if (preset) {
-      for (const section of ["layers", "tops", "bottoms"]) {
+      const renderPromises = ["layers", "tops", "bottoms"].map(async (section) => {
         const img = document.querySelector(`#${section}-viewport img`);
         const viewport = document.querySelector(`#${section}-viewport`);
         viewport.classList.add("loading");
@@ -85,7 +85,8 @@ async function renderCurrentImages() {
           img.style.display = "none";
         }
         viewport.classList.remove("loading");
-      }
+      });
+      await Promise.all(renderPromises);
     } else {
       // No favorites, clear images
       for (const section of ["layers", "tops", "bottoms"]) {
@@ -110,7 +111,9 @@ async function renderCurrentImages() {
     }
     return;
   }
-  for (const section of ["layers", "tops", "bottoms"]) {
+
+  // Process all sections in parallel
+  const renderPromises = ["layers", "tops", "bottoms"].map(async (section) => {
     const files = clothesIndex[activeCategory][section];
     if (files && files.length > 0) {
       const currentFileIndex = currentIndex[section] % files.length;
@@ -127,22 +130,25 @@ async function renderCurrentImages() {
       // Render current image
       await renderImage(section, currentUrl);
 
-      // Preload next/prev images in background
-      preloadImage(nextUrl);
-      preloadImage(prevUrl);
+      // Preload next/prev images in background (don't await these)
+      preloadImage(nextUrl).catch(err => console.warn(`Failed to preload ${nextUrl}:`, err));
+      preloadImage(prevUrl).catch(err => console.warn(`Failed to preload ${prevUrl}:`, err));
     } else {
       // No files for this section, clear image
       const img = document.querySelector(`#${section}-viewport img`);
       img.src = "";
       img.style.display = "none";
     }
-  }
+  });
+
+  await Promise.all(renderPromises);
 }
 
 async function renderImage(section, url) {
   const img = document.querySelector(`#${section}-viewport img`);
   const viewport = document.querySelector(`#${section}-viewport`);
 
+  console.log(`Attempting to render ${section} with URL: ${url}`);
   viewport.classList.add("loading");
 
   try {
@@ -150,13 +156,27 @@ async function renderImage(section, url) {
     if (section === "layers" && !state.layerVisible) {
       img.style.display = "none";
       img.src = "";
+      console.log(`Hidden layer for ${section}`);
     } else {
       await preloadImage(url);
       img.src = url;
       img.style.display = "";
+      console.log(`Successfully loaded ${section}: ${url}`);
     }
   } catch (error) {
-    console.warn(`Failed to load image: ${url}`);
+    console.warn(`Failed to load image: ${url}`, error);
+    // Clear the image on error and hide it
+    img.src = "";
+    img.style.display = "none";
+    // Show a placeholder or error message
+    const errorMsg = document.querySelector(`#${section}-error`) || 
+                    document.createElement('div');
+    errorMsg.id = `${section}-error`;
+    errorMsg.textContent = `Failed to load ${section} image`;
+    errorMsg.style.cssText = 'color: red; text-align: center; padding: 10px;';
+    if (!document.querySelector(`#${section}-error`)) {
+      viewport.appendChild(errorMsg);
+    }
   } finally {
     viewport.classList.remove("loading");
   }
@@ -378,6 +398,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
   clothesIndex = index;
+
+  // Add debugging
+  console.log("Clothes index loaded:", clothesIndex);
+  console.log("Current state:", state);
 
   // Load favorites
   loadFavoritesFromStorage();

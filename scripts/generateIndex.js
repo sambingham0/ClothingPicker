@@ -2,7 +2,7 @@ const fs = require("fs").promises;
 const path = require("path");
 
 async function generateIndexFiles() {
-  const baseDir = path.join(__dirname, "assets", "clothes");
+  const baseDir = path.join(__dirname, "..", "assets", "clothes");
   const categories = ["casual", "athletic", "sleep"];
   const sections = ["layers", "tops", "bottoms"];
 

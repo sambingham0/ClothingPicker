@@ -2,10 +2,15 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs").promises;
-const sharp = require("sharp"); // Add this line
+const sharp = require("sharp");
 
 const app = express();
 const port = 3000;
+
+app.get('/', (req, res) => {
+  // Serve index.html if parameter is present
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
 
 // Enable CORS and static file serving
 app.use(express.static("./"));
@@ -76,9 +81,9 @@ async function resizeImages() {
       }
     }
   }
+  console.log("All images resized successfully.");
 }
 
-resizeImages().catch(console.error);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -174,7 +179,17 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${port}`);
   console.log(`Upload endpoint: http://localhost:${port}/upload`);
+
+  // Run image processing in background after server starts
+  console.log("Starting background image processing...");
+  resizeImages()
+    .then(() => {
+      console.log("Background image processing completed!");
+    })
+    .catch((error) => {
+      console.error("Background image processing failed:", error);
+    });
 });
