@@ -1,0 +1,41 @@
+<div id="top-bar">
+  <app-user-profile></app-user-profile>
+  <select id="category-select" title="Filter by clothing category"
+          [(ngModel)]="state.activeCategory"
+          (ngModelChange)="onCategoryChange($event)">
+    <option *ngFor="let cat of categories" [value]="cat">{{ cat | titlecase }}</option>
+  </select>
+  <button id="random-btn" (click)="randomize()">Random</button>
+  <button id="toggle-layer-btn" (click)="toggleLayer()">
+    {{ state.layerVisible ? 'Remove Layer' : 'Show Layer' }}
+  </button>
+  <button id="save-preset-btn" (click)="savePreset()">Save Preset</button>
+  <button id="upload-btn" (click)="openUploadModal()">Upload Image</button>
+  <button id="manage-presets-btn" (click)="openManagePresetsModal()">Manage Presets</button>
+</div>
+
+<div id="picker-grid">
+  <div class="section-container" *ngFor="let section of sections" [attr.data-section]="section" [hidden]="section === 'layers' && !state.layerVisible">
+    <button class="cycle-btn up-btn" (click)="cycle(section, -1)">▲</button>
+    <div class="image-viewport" [id]="section + '-viewport'">
+      <img 
+        *ngIf="getCurrentImage(section)" 
+        [src]="getCurrentImage(section)" 
+        alt="Clothes Image" 
+        title="Clothes Image"
+        loading="lazy" />
+      <span *ngIf="!getCurrentImage(section)">No image available for {{ section }}</span>
+    </div>
+    <button class="cycle-btn down-btn" (click)="cycle(section, 1)">▼</button>
+  </div>
+</div>
+
+<div id="bottom-bar">
+  <button id="upload-btn-mobile" (click)="openUploadModal()">Upload Image</button>
+  <button id="manage-presets-btn-mobile" (click)="openManagePresetsModal()">Manage Presets</button>
+</div>
+
+<div id="footer-msg">{{ footerMsg }}</div>
+
+<app-upload-modal #uploadModal (uploadComplete)="onUploadComplete()"></app-upload-modal>
+<app-manage-presets-modal #managePresetsModal></app-manage-presets-modal>
