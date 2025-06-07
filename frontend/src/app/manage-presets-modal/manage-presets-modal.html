@@ -1,12 +1,28 @@
 <div id="manage-presets-modal" class="modal" [class.show]="visible">
   <div class="modal-content">
-    <h2>Manage Favorite Presets</h2>
-    <ul id="presets-list">
-      <li *ngFor="let preset of favorites; let i = index">
-        Preset {{ i + 1 }}
-        <button (click)="deletePreset(i)">Delete</button>
+    <h2>Manage Favorite Outfits</h2>
+    
+    <div *ngIf="loading" class="loading">
+      Loading outfits...
+    </div>
+    
+    <ul id="presets-list" *ngIf="!loading">
+      <li *ngFor="let outfit of outfits" class="outfit-item">
+        <div class="outfit-info">
+          <strong>{{ outfit.name }}</strong>
+          <small>{{ outfit.created_at | date:'short' }}</small>
+          <div class="outfit-items">
+            {{ outfit.items.length }} item(s)
+          </div>
+        </div>
+        <button (click)="deletePreset(outfit)" class="delete-btn">Delete</button>
+      </li>
+      
+      <li *ngIf="outfits.length === 0" class="no-outfits">
+        No saved outfits yet.
       </li>
     </ul>
+    
     <div class="modal-buttons">
       <button type="button" (click)="close()">Close</button>
     </div>

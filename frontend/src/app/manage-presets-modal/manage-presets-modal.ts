@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ClothesService } from '../services/clothes.service';
+import { OutfitService, Outfit } from '../services/outfit.service';
 
 @Component({
   selector: 'app-manage-presets-modal',
@@ -10,19 +10,34 @@ import { ClothesService } from '../services/clothes.service';
 })
 export class ManagePresetsModal {
   private _visible = false;
-  favorites: any[] = [];
+  outfits: Outfit[] = [];
+  loading = false;
 
-  constructor(private clothesService: ClothesService) {
-    this.loadFavorites();
+  constructor(private outfitService: OutfitService) {}
+
+  loadOutfits() {
+    this.loading = true;
+    this.outfitService.getAll().subscribe({
+      next: (outfits) => {
+        this.outfits = outfits;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading outfits:', error);
+        this.loading = false;
+      }
+    });
   }
 
-  loadFavorites() {
-    this.favorites = this.clothesService.loadFavorites();
-  }
-
-  deletePreset(idx: number) {
-    this.favorites.splice(idx, 1);
-    this.clothesService.saveFavorites(this.favorites);
+  deletePreset(outfit: Outfit) {
+    this.outfitService.delete(outfit.id).subscribe({
+      next: () => {
+        this.outfits = this.outfits.filter(o => o.id !== outfit.id);
+      },
+      error: (error) => {
+        console.error('Error deleting outfit:', error);
+      }
+    });
   }
 
   close() {
@@ -32,7 +47,7 @@ export class ManagePresetsModal {
   set visible(value: boolean) {
     this._visible = value;
     if (value) {
-      this.loadFavorites();
+      this.loadOutfits();
     }
   }
 

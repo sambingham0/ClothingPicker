@@ -8,6 +8,5 @@ import { RouterOutlet } from '@angular/router';
   template: '<router-outlet></router-outlet>',
   styleUrl: './app.css'
 })
-export class App {
-  protected title = 'ClothingPicker';
-}
+
+export class App {}

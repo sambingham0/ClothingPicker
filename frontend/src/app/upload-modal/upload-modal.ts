@@ -47,23 +47,23 @@ export class UploadModal {
     this.uploading = true;
     this.errorMessage = '';
     
-    try {
-      const formValue = form.value;
-      await this.clothesService.uploadClothing(
-        this.selectedFile, 
-        formValue.category, 
-        formValue.section
-      );
-      
-      this.close();
-      this.uploadComplete.emit();
-    } catch (error: any) {
-      console.error('Upload failed:', error);
-      this.errorMessage = error.message || 'Upload failed. Please try again.';
-    } finally {
-      this.uploading = false;
-    }
-  }
+    const formValue = form.value;
+    this.clothesService.uploadClothing(
+      this.selectedFile, 
+      formValue.category, 
+      formValue.section
+    ).subscribe({
+      next: (url) => {
+        this.close();
+        this.uploadComplete.emit();
+      },
+      error: (error) => {
+        console.error('Upload failed:', error);
+        this.errorMessage = error.message || 'Upload failed. Please try again.';
+        this.uploading = false;
+      }
+    });
+}
 
   close() {
     this.visible = false;

@@ -1,11 +1,13 @@
 import { FormsModule } from '@angular/forms';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ClothesService } from '../services/clothes.service';
 import { UploadModal } from '../upload-modal/upload-modal';
 import { ManagePresetsModal } from '../manage-presets-modal/manage-presets-modal';
 import { UserProfileComponent } from '../components/user-profile/user-profile';
+import { OutfitService, Outfit } from '../services/outfit.service';
+
 
 type Section = 'layers' | 'tops' | 'bottoms';
 
@@ -40,7 +42,10 @@ export class Picker implements OnInit {
     layerVisible: true
   };
 
-  constructor(private clothesService: ClothesService) {}
+  constructor(
+    private clothesService: ClothesService,
+    @Inject(OutfitService) private OutfitService: OutfitService
+  ) {}
 
   ngOnInit(): void {
     this.loadClothesData();
@@ -52,11 +57,11 @@ export class Picker implements OnInit {
       for (const section of this.sections) {
         console.log(`Loading data for ${category}/${section}`);
         this.clothesService.getClothesIndex(category, section).subscribe({
-          next: (files) => {
+          next: (files: string[]) => {
             console.log(`Successfully loaded ${category}/${section}:`, files);
             this.clothesIndex[category][section] = files;
           },
-          error: (error) => {
+          error: (error: any[]) => {
             console.error(`Error loading ${category}/${section}:`, error);
             this.clothesIndex[category][section] = [];
           }
@@ -110,19 +115,31 @@ export class Picker implements OnInit {
   }
 
   savePreset() {
-    const favorites = this.clothesService.loadFavorites();
-    const currentOutfit = {
-      category: this.state.activeCategory,
-      layers: this.getCurrentImage('layers'),
-      tops: this.getCurrentImage('tops'),
-      bottoms: this.getCurrentImage('bottoms'),
-      timestamp: Date.now()
-    };
-    favorites.push(currentOutfit);
-    this.clothesService.saveFavorites(favorites);
-    this.footerMsg = 'Preset saved!';
-    setTimeout(() => this.footerMsg = '', 3000);
+    const currentImages = this.sections
+      .map(section => this.getCurrentImage(section))
+      .filter((img): img is string => img !== null);
+    
+    if (currentImages.length === 0) {
+      this.footerMsg = 'No items to save!';
+      setTimeout(() => this.footerMsg = '', 3000);
+      return;
+    }
+
+    const outfitName = `${this.state.activeCategory} Outfit ${Date.now()}`;
+    
+    this.OutfitService.create(outfitName, currentImages).subscribe({
+      next: (outfit) => {
+        this.footerMsg = 'Preset saved!';
+        setTimeout(() => this.footerMsg = '', 3000);
+      },
+      error: (error) => {
+        console.error('Error saving outfit:', error);
+        this.footerMsg = 'Error saving preset!';
+        setTimeout(() => this.footerMsg = '', 3000);
+      }
+    });
   }
+
 
   openUploadModal() {
     this.uploadModal.visible = true;

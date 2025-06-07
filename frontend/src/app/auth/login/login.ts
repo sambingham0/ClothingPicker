@@ -46,18 +46,13 @@ export class LoginComponent {
   }
 
   private getErrorMessage(error: any): string {
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        return 'Email is already registered';
-      case 'auth/weak-password':
-        return 'Password should be at least 6 characters';
-      case 'auth/invalid-email':
-        return 'Invalid email address';
-      case 'auth/user-not-found':
-      case 'auth/wrong-password':
-        return 'Invalid email or password';
-      default:
-        return error.message || 'An error occurred';
+    if (error.status === 401) {
+      return 'Invalid email or password';
+    } else if (error.status === 400) {
+      return error.error?.message || 'Invalid request';
+    } else if (error.status === 409) {
+      return 'Email is already registered';
     }
+    return error.message || 'An error occurred';
   }
 }

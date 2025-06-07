@@ -1,3 +1,66 @@
 .modal.show {
   display: block !important;
 }
+
+.outfit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.outfit-info {
+  flex: 1;
+}
+
+.outfit-info strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.outfit-info small {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.outfit-items {
+  color: #888;
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-outfits {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+}
+
+#presets-list {
+  list-style: none;
+  padding: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
