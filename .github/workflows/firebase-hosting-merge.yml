@@ -22,6 +22,7 @@ jobs:
         working-directory: ./frontend
       - name: Create environment file
         run: |
+          mkdir -p frontend/src/environments
           echo "export const environment = {
             production: true,
             firebase: {
