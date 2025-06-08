@@ -27,7 +27,7 @@ export class OutfitService {
     return this.http.post<Outfit>(this.baseUrl, { name, items });
   }
 
-  update(id: string, name?: string, items?: string[]): Observable<Outfit> {
+  update(id: string, name?: string, items?: number[]): Observable<Outfit> {
     return this.http.put<Outfit>(`${this.baseUrl}/${id}`, { name, items });
   }
 

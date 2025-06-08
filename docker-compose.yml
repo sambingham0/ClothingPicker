@@ -20,6 +20,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
+      COMPOSE_BAKE: true
       # Override .env if needed; docker-compose will inject these
       PORT: 3000
       JWT_SECRET: supersecretkey        # You can override for production later
@@ -39,14 +40,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      API_URL: http://localhost:3000/api
-      UPLOADS_URL: http://localhost:3000/uploads
     depends_on:
-      - backend
+      -  backend
     ports:
-      - "80:80"   # Serve Angular on port 80
+      - "80:80"
 
 volumes:
   pgdata:

@@ -39,7 +39,7 @@ router.post('/', authMiddleware, async (req, res) => {
   if (!name || !Array.isArray(items)) {
     return res
       .status(400)
-      .json({ error: 'Name and array of item IDs required.' });
+      .json({ error: 'Name and array of item URLs required.' });
   }
   try {
     // Create outfit
@@ -49,13 +49,29 @@ router.post('/', authMiddleware, async (req, res) => {
     );
     const outfit = outfitRes.rows[0];
 
-    // Insert into outfit_items
-    if (items.length > 0) {
-      const valuesClause = items
+    // For each URL, find the corresponding clothing_item ID
+    const itemIds = [];
+    for (const itemUrl of items) {
+      // Extract filename from URL (e.g., '/uploads/filename.png' -> 'filename.png')
+      const filename = itemUrl.replace(/^.*\/uploads\//, '').replace(/^http:\/\/localhost:3000\/uploads\//, '');
+      
+      // Find the clothing item by filename
+      const itemRes = await db.query(
+        'SELECT id FROM clothing_items WHERE user_id = $1 AND filename = $2',
+        [userId, filename]
+      );
+      
+      if (itemRes.rows.length > 0) {
+        itemIds.push(itemRes.rows[0].id);
+      }
+    }
+
+    // Insert into outfit_items using the found IDs
+    if (itemIds.length > 0) {
+      const valuesClause = itemIds
         .map((_, idx) => `($1, $${idx + 2})`)
         .join(', ');
-      // Flatten [outfit.id, item1, item2, item3, ...]
-      const values = [outfit.id, ...items];
+      const values = [outfit.id, ...itemIds];
       await db.query(
         `INSERT INTO outfit_items (outfit_id, clothing_item_id) VALUES ${valuesClause}`,
         values
@@ -100,16 +116,36 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (Array.isArray(items)) {
       // Delete old join rows
       await db.query('DELETE FROM outfit_items WHERE outfit_id = $1', [outfitId]);
-      // Insert new ones
+      
+      // Convert URLs to IDs if items are provided
+      const itemIds = [];
       if (items.length > 0) {
-        const valuesClause = items
-          .map((_, idx) => `($1, $${idx + 2})`)
-          .join(', ');
-        const values = [outfitId, ...items];
-        await db.query(
-          `INSERT INTO outfit_items (outfit_id, clothing_item_id) VALUES ${valuesClause}`,
-          values
-        );
+        for (const itemUrl of items) {
+          // Extract filename from URL
+          const filename = itemUrl.replace(/^.*\/uploads\//, '').replace(/^http:\/\/localhost:3000\/uploads\//, '');
+          
+          // Find the clothing item by filename
+          const itemRes = await db.query(
+            'SELECT id FROM clothing_items WHERE user_id = $1 AND filename = $2',
+            [userId, filename]
+          );
+          
+          if (itemRes.rows.length > 0) {
+            itemIds.push(itemRes.rows[0].id);
+          }
+        }
+        
+        // Insert new ones with converted IDs
+        if (itemIds.length > 0) {
+          const valuesClause = itemIds
+            .map((_, idx) => `($1, $${idx + 2})`)
+            .join(', ');
+          const values = [outfitId, ...itemIds];
+          await db.query(
+            `INSERT INTO outfit_items (outfit_id, clothing_item_id) VALUES ${valuesClause}`,
+            values
+          );
+        }
       }
     }
     // Return updated outfit

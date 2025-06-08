@@ -1,0 +1,24 @@
+<div class="modal" [class.show]="visible">
+  <div class="modal-content">
+    <h3>Name Your Outfit</h3>
+    
+    <div class="form-group">
+      <label for="preset-name">Outfit Name:</label>
+      <input 
+        type="text" 
+        id="preset-name" 
+        [(ngModel)]="presetName" 
+        placeholder="Enter outfit name..."
+        maxlength="50"
+        (keyup.enter)="save()"
+        autofocus>
+    </div>
+    
+    <div class="modal-buttons">
+      <button type="button" (click)="cancel()">Cancel</button>
+      <button type="button" (click)="save()" [disabled]="!presetName.trim()">
+        Save Outfit
+      </button>
+    </div>
+  </div>
+</div>

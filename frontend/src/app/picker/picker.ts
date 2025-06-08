@@ -2,12 +2,12 @@ import { FormsModule } from '@angular/forms';
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { ClothesService } from '../services/clothes.service';
+import { ClothesService, ClothingItem } from '../services/clothes.service';
 import { UploadModal } from '../upload-modal/upload-modal';
 import { ManagePresetsModal } from '../manage-presets-modal/manage-presets-modal';
+import { NamePresetModal } from '../name-preset-modal/name-preset-modal';
 import { UserProfileComponent } from '../components/user-profile/user-profile';
 import { OutfitService, Outfit } from '../services/outfit.service';
-
 
 type Section = 'layers' | 'tops' | 'bottoms';
 
@@ -15,22 +15,30 @@ type Section = 'layers' | 'tops' | 'bottoms';
   selector: 'app-picker',
   templateUrl: './picker.html',
   styleUrl: './picker.css',
-  imports: [FormsModule, TitleCasePipe, CommonModule, UserProfileComponent, UploadModal, ManagePresetsModal],
+  imports: [FormsModule, TitleCasePipe, CommonModule, UserProfileComponent, UploadModal, ManagePresetsModal, NamePresetModal],
 })
 export class Picker implements OnInit {
   @ViewChild('uploadModal') uploadModal!: UploadModal;
   @ViewChild('managePresetsModal') managePresetsModal!: ManagePresetsModal;
+  @ViewChild('namePresetModal') namePresetModal!: NamePresetModal;
 
   footerMsg = '';
 
   clothesIndex: {
     [category: string]: {
-      [section in Section]?: string[]
+      [section in Section]?: ClothingItem[]
     }
   } = {};
 
   sections: Section[] = ['layers', 'tops', 'bottoms'];
-  categories = ['casual', 'athletic', 'sleep'];
+  categories = ['casual', 'athletic', 'sleep', 'presets'];
+  
+  // Store loaded presets
+  presets: Outfit[] = [];
+  currentPresetIndex = 0;
+
+  // Store pending preset images for modal workflow
+  private pendingPresetImages: string[] | null = null;
 
   state = {
     activeCategory: 'casual',
@@ -44,24 +52,27 @@ export class Picker implements OnInit {
 
   constructor(
     private clothesService: ClothesService,
-    @Inject(OutfitService) private OutfitService: OutfitService
+    private OutfitService: OutfitService
   ) {}
 
   ngOnInit(): void {
     this.loadClothesData();
+    this.loadPresets();
   }
 
   loadClothesData() {
     for (const category of this.categories) {
+      if (category === 'presets') continue; // Skip presets category for clothes loading
+      
       this.clothesIndex[category] = {};
       for (const section of this.sections) {
         console.log(`Loading data for ${category}/${section}`);
         this.clothesService.getClothesIndex(category, section).subscribe({
-          next: (files: string[]) => {
-            console.log(`Successfully loaded ${category}/${section}:`, files);
-            this.clothesIndex[category][section] = files;
+          next: (items: ClothingItem[]) => {
+            console.log(`Successfully loaded ${category}/${section}:`, items);
+            this.clothesIndex[category][section] = items;
           },
-          error: (error: any[]) => {
+          error: (error: any) => {
             console.error(`Error loading ${category}/${section}:`, error);
             this.clothesIndex[category][section] = [];
           }
@@ -70,42 +81,100 @@ export class Picker implements OnInit {
     }
   }
 
-  getCurrentImage(section: Section): string | null {
-    const category = this.state.activeCategory;
-    const idx = this.state.currentIndex[section];
-    const files = this.clothesIndex[category]?.[section] || [];
-    
-    if (files.length > 0 && files[idx]) {
-      // Handle both default clothes and user-uploaded clothes
-      const imageUrl = files[idx];
-      if (imageUrl.startsWith('http')) {
-        // Firebase Storage URL
-        return imageUrl;
-      } else {
-        // Local asset URL
-        return imageUrl.startsWith('/assets') ? imageUrl : `/assets/clothes/${category}/${section}/${imageUrl}`;
+  loadPresets() {
+    this.OutfitService.getAll().subscribe({
+      next: (outfits) => {
+        this.presets = outfits;
+      },
+      error: (error) => {
+        console.error('Error loading presets:', error);
+        this.presets = [];
       }
-    }
-    
-    return null;
+    });
   }
 
-  cycle(section: Section, delta: number) {
+  getCurrentImage(section: Section): string | null {
+    // Special handling for presets category
+    if (this.state.activeCategory === 'presets') {
+      if (this.presets.length === 0) return null;
+      
+      const currentPreset = this.presets[this.currentPresetIndex];
+      if (!currentPreset || !currentPreset.items) return null;
+      
+      // Debug logging to see what we're working with
+      console.log('Current preset:', currentPreset);
+      console.log('Looking for section:', section);
+      
+      // Find item for this section in the preset
+      const item = currentPreset.items.find(item => {
+        // Map item types to sections
+        const typeToSection: { [key: string]: Section } = {
+          'layers': 'layers',
+          'tops': 'tops', 
+          'bottoms': 'bottoms'
+        };
+        return typeToSection[item.type] === section;
+      });
+      
+      console.log('Found item for section:', item);
+      
+      if (item) {
+        // With Angular proxy, just use /uploads/ directly - proxy handles the routing
+        if (item.filename.startsWith('http') || item.filename.startsWith('/')) {
+          return item.filename;
+        }
+        // Otherwise, construct the URL with /uploads/ prefix
+        return `/uploads/${item.filename}`;
+      }
+      return null;
+    }
+    
+    // Original logic for non-preset categories
     const category = this.state.activeCategory;
-    const files = this.clothesIndex[category]?.[section] || [];
-    if (!files.length) return;
-    let idx = this.state.currentIndex[section] + delta;
-    if (idx < 0) idx = files.length - 1;
-    if (idx >= files.length) idx = 0;
-    this.state.currentIndex[section] = idx;
+    const idx = this.state.currentIndex[section];
+    const items = this.clothesIndex[category]?.[section] || [];
+    
+    if (items.length === 0) return null;
+    return items[idx]?.url || null;
   }
+      
+
+  cycle(section: Section, delta: number) {
+    // Special handling for presets category
+    if (this.state.activeCategory === 'presets') {
+      // For presets, cycle through different presets instead of individual items
+      if (this.presets.length === 0) return;
+      
+      this.currentPresetIndex = (this.currentPresetIndex + delta + this.presets.length) % this.presets.length;
+      return;
+    }
+    
+    // Original logic for non-preset categories
+    const category = this.state.activeCategory;
+    const items = this.clothesIndex[category]?.[section] || [];
+    
+    if (items.length === 0) return;
+    
+    this.state.currentIndex[section] = 
+      (this.state.currentIndex[section] + delta + items.length) % items.length;
+}
 
   randomize() {
     const category = this.state.activeCategory;
+    
+    // Handle presets category differently
+    if (category === 'presets') {
+      if (this.presets.length > 0) {
+        this.currentPresetIndex = Math.floor(Math.random() * this.presets.length);
+      }
+      return;
+    }
+    
+    // Regular category handling
     for (const section of this.sections as Section[]) {
-      const files = this.clothesIndex[category]?.[section] || [];
-      if (files.length) {
-        this.state.currentIndex[section] = Math.floor(Math.random() * files.length);
+      const items = this.clothesIndex[category]?.[section] || [];
+      if (items.length) {
+        this.state.currentIndex[section] = Math.floor(Math.random() * items.length);
       }
     }
   }
@@ -115,31 +184,44 @@ export class Picker implements OnInit {
   }
 
   savePreset() {
+    console.log('savePreset() called');
+    console.log('Active category:', this.state.activeCategory);
+    console.log('namePresetModal:', this.namePresetModal);
+    
+    // Prevent saving when viewing presets
+    if (this.state.activeCategory === 'presets') {
+      console.log('Cannot save - in presets category');
+      this.footerMsg = 'Cannot save preset while viewing presets!';
+      setTimeout(() => this.footerMsg = '', 3000);
+      return;
+    }
+    
+    // Get current image URLs instead of IDs
     const currentImages = this.sections
-      .map(section => this.getCurrentImage(section))
-      .filter((img): img is string => img !== null);
+      .map(section => {
+        const category = this.state.activeCategory;
+        const idx = this.state.currentIndex[section];
+        const items = this.clothesIndex[category]?.[section] || [];
+        return items[idx]?.url;
+      })
+      .filter(url => url !== undefined);
+    
+    console.log('Current images:', currentImages);
     
     if (currentImages.length === 0) {
+      console.log('No items to save');
       this.footerMsg = 'No items to save!';
       setTimeout(() => this.footerMsg = '', 3000);
       return;
     }
 
-    const outfitName = `${this.state.activeCategory} Outfit ${Date.now()}`;
+    console.log('Opening name preset modal');
+    console.log('namePresetModal before setting visible:', this.namePresetModal);
     
-    this.OutfitService.create(outfitName, currentImages).subscribe({
-      next: (outfit) => {
-        this.footerMsg = 'Preset saved!';
-        setTimeout(() => this.footerMsg = '', 3000);
-      },
-      error: (error) => {
-        console.error('Error saving outfit:', error);
-        this.footerMsg = 'Error saving preset!';
-        setTimeout(() => this.footerMsg = '', 3000);
-      }
-    });
+    // Store current images for when modal completes
+    this.pendingPresetImages = currentImages;
+    this.namePresetModal.visible = true;
   }
-
 
   openUploadModal() {
     this.uploadModal.visible = true;
@@ -151,8 +233,16 @@ export class Picker implements OnInit {
 
   onCategoryChange(category: string) {
     this.state.activeCategory = category;
-    // Reset indices when changing category
-    this.state.currentIndex = { layers: 0, tops: 0, bottoms: 0 };
+    
+    if (category === 'presets') {
+      // Reset to first preset when switching to presets
+      this.currentPresetIndex = 0;
+      // Reload presets to make sure we have latest data
+      this.loadPresets();
+    } else {
+      // Reset indices when changing to regular category
+      this.state.currentIndex = { layers: 0, tops: 0, bottoms: 0 };
+    }
   }
 
   onUploadComplete() {
@@ -160,5 +250,47 @@ export class Picker implements OnInit {
     this.loadClothesData();
     this.footerMsg = 'Image uploaded successfully!';
     setTimeout(() => this.footerMsg = '', 3000);
+  }
+
+  // Event handlers for name preset modal
+  onPresetNamed(name: string) {
+    if (this.pendingPresetImages) {
+      this.OutfitService.create(name, this.pendingPresetImages).subscribe({
+        next: (outfit) => {
+          this.footerMsg = `Preset "${name}" saved!`;
+          setTimeout(() => this.footerMsg = '', 3000);
+          this.loadPresets();
+        },
+        error: (error) => {
+          console.error('Error saving outfit:', error);
+          this.footerMsg = 'Error saving preset!';
+          setTimeout(() => this.footerMsg = '', 3000);
+        }
+      });
+      this.pendingPresetImages = null;
+    }
+  }
+
+  onPresetNameCancelled() {
+    this.pendingPresetImages = null;
+    this.footerMsg = 'Preset save cancelled.';
+    setTimeout(() => this.footerMsg = '', 3000);
+  }
+
+  // Get current preset name for display
+  getCurrentPresetName(): string {
+    if (this.state.activeCategory === 'presets' && this.presets.length > 0) {
+      return this.presets[this.currentPresetIndex]?.name || 'Unnamed Preset';
+    }
+    return '';
+  }
+
+  // Get preset count info
+  getPresetInfo(): string {
+    if (this.state.activeCategory === 'presets') {
+      if (this.presets.length === 0) return 'No presets available';
+      return `${this.currentPresetIndex + 1} of ${this.presets.length}`;
+    }
+    return '';
   }
 }

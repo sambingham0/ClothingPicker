@@ -13,8 +13,10 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/frontend",
             "browser": "src/main.ts",
-            "index": "src/app/app.html",
+            "baseHref": "/",
+            "index": "public/index.html",
             "polyfills": [
               "zone.js"
             ],

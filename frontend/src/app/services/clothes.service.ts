@@ -4,6 +4,12 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
+export interface ClothingItem {
+  id: number;
+  url: string;
+  type: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,13 +18,8 @@ export class ClothesService {
 
   constructor(private http: HttpClient) {}
 
-  getClothesIndex(category: string, section: string): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/clothes/${category}/${section}`).pipe(
-      catchError(error => {
-        console.error('Error fetching clothes:', error);
-        return of([]);
-      })
-    );
+  getClothesIndex(category: string, section: string): Observable<ClothingItem[]> {
+    return this.http.get<ClothingItem[]>(`${this.apiUrl}/clothes/${category}/${section}`);
   }
 
   uploadClothing(file: File, category: string, section: string): Observable<string> {

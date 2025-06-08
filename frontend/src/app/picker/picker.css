@@ -1,0 +1,24 @@
+.preset-info {
+  text-align: center;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  margin: 10px;
+}
+
+.preset-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 5px;
+}
+
+.preset-count {
+  color: #666;
+  font-size: 0.9em;
+}
+
+#save-preset-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}

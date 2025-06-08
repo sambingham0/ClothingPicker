@@ -9,25 +9,37 @@
   <button id="toggle-layer-btn" (click)="toggleLayer()">
     {{ state.layerVisible ? 'Remove Layer' : 'Show Layer' }}
   </button>
-  <button id="save-preset-btn" (click)="savePreset()">Save Preset</button>
+  <button id="save-preset-btn" (click)="savePreset()" [disabled]="state.activeCategory === 'presets'">
+    Save Preset
+  </button>
   <button id="upload-btn" (click)="openUploadModal()">Upload Image</button>
   <button id="manage-presets-btn" (click)="openManagePresetsModal()">Manage Presets</button>
 </div>
 
+<!-- Show preset info when in presets mode -->
+<div id="preset-info" *ngIf="state.activeCategory === 'presets'" class="preset-info">
+  <div class="preset-name">{{ getCurrentPresetName() }}</div>
+  <div class="preset-count">{{ getPresetInfo() }}</div>
+</div>
+
 <div id="picker-grid">
-  <div class="section-container" *ngFor="let section of sections" [attr.data-section]="section" [hidden]="section === 'layers' && !state.layerVisible">
-    <button class="cycle-btn up-btn" (click)="cycle(section, -1)">▲</button>
-    <div class="image-viewport" [id]="section + '-viewport'">
-      <img 
-        *ngIf="getCurrentImage(section)" 
-        [src]="getCurrentImage(section)" 
-        alt="Clothes Image" 
-        title="Clothes Image"
-        loading="lazy" />
-      <span *ngIf="!getCurrentImage(section)">No image available for {{ section }}</span>
+  <ng-container *ngFor="let section of sections">
+    <div class="section-container" [attr.data-section]="section" *ngIf="!(section === 'layers' && !state.layerVisible)">
+      <button class="cycle-btn up-btn" (click)="cycle(section, -1)">▲</button>
+      <div class="image-viewport" [id]="section + '-viewport'">
+        <img 
+          *ngIf="getCurrentImage(section)" 
+          [src]="getCurrentImage(section)" 
+          alt="Clothes Image" 
+          title="Clothes Image"
+          loading="lazy" />
+        <span *ngIf="!getCurrentImage(section)">
+          {{ state.activeCategory === 'presets' ? 'No item in this preset' : 'No image available for ' + section }}
+        </span>
+      </div>
+      <button class="cycle-btn down-btn" (click)="cycle(section, 1)">▼</button>
     </div>
-    <button class="cycle-btn down-btn" (click)="cycle(section, 1)">▼</button>
-  </div>
+  </ng-container>
 </div>
 
 <div id="bottom-bar">
@@ -39,3 +51,7 @@
 
 <app-upload-modal #uploadModal (uploadComplete)="onUploadComplete()"></app-upload-modal>
 <app-manage-presets-modal #managePresetsModal></app-manage-presets-modal>
+<app-name-preset-modal #namePresetModal 
+  (presetNamed)="onPresetNamed($event)"
+  (cancelled)="onPresetNameCancelled()">
+</app-name-preset-modal>
