@@ -28,8 +28,6 @@ services:
       UPLOAD_DIR: /usr/src/app/uploads
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
-      # If you want to mount local source for live reload, add:
-      # - ./backend/src:/usr/src/app/src
     depends_on:
       - postgres
     ports:
