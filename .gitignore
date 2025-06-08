@@ -62,3 +62,8 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Upload directories
+backend/uploads/
+frontend/uploads/
+uploads/
