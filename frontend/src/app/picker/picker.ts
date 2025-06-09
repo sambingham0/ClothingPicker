@@ -6,7 +6,7 @@ import { ClothesService, ClothingItem } from '../services/clothes.service';
 import { UploadModal } from '../upload-modal/upload-modal';
 import { ManagePresetsModal } from '../manage-presets-modal/manage-presets-modal';
 import { NamePresetModal } from '../name-preset-modal/name-preset-modal';
-import { UserProfileComponent } from '../components/user-profile/user-profile';
+import { UserProfileModal } from '../user-profile-modal/user-profile-modal';
 import { OutfitService, Outfit } from '../services/outfit.service';
 
 type Section = 'layers' | 'tops' | 'bottoms';
@@ -15,12 +15,13 @@ type Section = 'layers' | 'tops' | 'bottoms';
   selector: 'app-picker',
   templateUrl: './picker.html',
   styleUrl: './picker.css',
-  imports: [FormsModule, TitleCasePipe, CommonModule, UserProfileComponent, UploadModal, ManagePresetsModal, NamePresetModal],
+  imports: [FormsModule, TitleCasePipe, CommonModule, UserProfileModal, UploadModal, ManagePresetsModal, NamePresetModal],
 })
 export class Picker implements OnInit {
   @ViewChild('uploadModal') uploadModal!: UploadModal;
   @ViewChild('managePresetsModal') managePresetsModal!: ManagePresetsModal;
   @ViewChild('namePresetModal') namePresetModal!: NamePresetModal;
+  @ViewChild('userProfileModal') userProfileModal!: UserProfileModal;
 
   footerMsg = '';
 
@@ -229,6 +230,10 @@ export class Picker implements OnInit {
 
   openManagePresetsModal() {
     this.managePresetsModal.visible = true;
+  }
+
+  openUserProfileModal() {
+    this.userProfileModal.visible = true;
   }
 
   onCategoryChange(category: string) {

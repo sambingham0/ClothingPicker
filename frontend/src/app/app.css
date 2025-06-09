@@ -231,3 +231,52 @@ input[type="file"] {
   flex-shrink: 0;
   margin-bottom: 5px;
 }
+
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    overflow-y: auto; /* Allow scrolling on mobile */
+  }
+  
+  #top-bar {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  #top-bar select,
+  #top-bar button {
+    padding: 10px;
+    font-size: 0.9rem;
+    width: 100%; /* Make buttons full width on mobile */
+  }
+  
+  #picker-grid {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .image-viewport img {
+    height: 300px;
+  }
+  
+  #bottom-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: transparent;
+  }
+  
+  /* Additional mobile optimizations */
+  .modal-content {
+    width: 95%;
+    margin: 5% auto;
+    padding: 15px;
+  }
+  
+  .preset-info {
+    margin: 5px;
+    padding: 8px;
+  }
+}

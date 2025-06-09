@@ -1,5 +1,7 @@
 <div id="top-bar">
-  <app-user-profile></app-user-profile>
+  <button id="user-profile-btn" (click)="openUserProfileModal()" title="User Profile">
+    <span>Profile</span>
+  </button>
   <select id="category-select" title="Filter by clothing category"
           [(ngModel)]="state.activeCategory"
           (ngModelChange)="onCategoryChange($event)">
@@ -49,6 +51,7 @@
 
 <div id="footer-msg">{{ footerMsg }}</div>
 
+<app-user-profile-modal #userProfileModal></app-user-profile-modal>
 <app-upload-modal #uploadModal (uploadComplete)="onUploadComplete()"></app-upload-modal>
 <app-manage-presets-modal #managePresetsModal></app-manage-presets-modal>
 <app-name-preset-modal #namePresetModal 
