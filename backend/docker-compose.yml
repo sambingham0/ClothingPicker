@@ -5,6 +5,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: clothes_db
+      COMPOSE_BAKE: true
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql

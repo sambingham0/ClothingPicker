@@ -1,6 +1,6 @@
 <div id="upload-modal" class="modal" [class.show]="visible">
   <div class="modal-content">
-    <h2>Upload Image</h2>
+    <h2>Upload Images</h2>
     
     <div class="error" *ngIf="errorMessage">
       {{ errorMessage }}
@@ -23,23 +23,27 @@
       
       <input 
         type="file" 
-        name="image" 
+        name="images" 
         accept="image/*" 
+        multiple
         required 
-        title="Choose an image to upload"
+        title="Choose images to upload"
         (change)="onFileSelected($event)"
       />
       
-      <div class="file-info" *ngIf="selectedFile">
-        <small>Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024 / 1024).toFixed(2) }}MB)</small>
+      <div class="file-info" *ngIf="selectedFiles.length > 0">
+        <div *ngFor="let file of selectedFiles">
+          <small>{{ file.name }} ({{ (file.size / 1024 / 1024).toFixed(2) }}MB)</small>
+        </div>
+        <p><strong>{{ selectedFiles.length }} file(s) selected</strong></p>
       </div>
       
       <div class="modal-buttons">
         <button 
           type="submit" 
-          [disabled]="!uploadForm.valid || uploading || !selectedFile"
+          [disabled]="!uploadForm.valid || uploading || selectedFiles.length === 0"
         >
-          {{ uploading ? 'Uploading...' : 'Upload' }}
+          {{ uploading ? 'Uploading...' : 'Upload ' + selectedFiles.length + ' file(s)' }}
         </button>
         <button type="button" (click)="close()" [disabled]="uploading">
           Cancel

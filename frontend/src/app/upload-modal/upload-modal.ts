@@ -13,62 +13,49 @@ export class UploadModal {
   visible = false;
   uploading = false;
   errorMessage = '';
-  selectedFile: File | null = null;
+  selectedFiles: File[] = [];
   
   @Output() uploadComplete = new EventEmitter<void>();
   
   private clothesService = inject(ClothesService);
 
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'File size must be less than 5MB';
-        return;
-      }
-
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        this.errorMessage = 'File must be an image';
-        return;
-      }
-
-      this.selectedFile = file;
-      this.errorMessage = '';
-    }
+    const files = Array.from(event.target.files) as File[];
+    // Validate each file
+    this.selectedFiles = files.filter(file => {
+      if (file.size > 5 * 1024 * 1024) return false;
+      if (!file.type.startsWith('image/')) return false;
+      return true;
+    });
   }
 
   async onSubmit(form: NgForm) {
-    if (!form.valid || this.uploading || !this.selectedFile) {
-      return;
-    }
+    if (!form.valid || this.selectedFiles.length === 0) return;
 
     this.uploading = true;
     this.errorMessage = '';
-    
-    const formValue = form.value;
-    this.clothesService.uploadClothing(
-      this.selectedFile, 
-      formValue.category, 
-      formValue.section
-    ).subscribe({
-      next: (url) => {
-        this.close();
-        this.uploadComplete.emit();
-      },
-      error: (error) => {
-        console.error('Upload failed:', error);
-        this.errorMessage = error.message || 'Upload failed. Please try again.';
-        this.uploading = false;
+
+    const { category, section } = form.value;
+
+    try {
+      // Upload each file sequentially
+      for (const file of this.selectedFiles) {
+        await this.clothesService.uploadClothing(file, category, section).toPromise();
       }
-    });
-}
+      
+      this.uploadComplete.emit();
+      this.close();
+    } catch (error: any) {
+      this.errorMessage = error.error?.error || 'Upload failed';
+    } finally {
+      this.uploading = false;
+    }
+  }
 
   close() {
     this.visible = false;
     this.errorMessage = '';
-    this.selectedFile = null;
+    this.selectedFiles = [];
     this.uploading = false;
     
     // Reset form
