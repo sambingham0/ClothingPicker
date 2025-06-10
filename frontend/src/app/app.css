@@ -32,26 +32,9 @@ body {
   border: none;
   padding: 10px;
   display: flex;
-  gap: 10px;
   align-items: center;
   flex-shrink: 0;
   justify-content: space-evenly;
-}
-
-#top-bar label {
-  font-size: 1rem;
-}
-
-#top-bar select,
-#top-bar button {
-  font-size: 1rem;
-  padding: 20px 15px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-#top-bar button:hover {
-  background-color: #f0f0f0;
 }
 
 #bottom-bar {
@@ -81,32 +64,39 @@ body {
 
 /* Up / Down buttons */
 .cycle-btn {
-  background-color: none;
-  border: none;
+  background-image: url("/btn-bg.png");
+  background-color: transparent;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #8164b4 !important;
+  border: none !important;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 10px;
   margin: 0;
-  transition: background-color 0.3s;
 }
 
-.cycle-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+#top-bar button, #bottom-bar button, #category-select {
+  background-image: url("/nav-bg.png");
+  background-color: transparent;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+  width: 150px;
+  height: 65px;
+  padding: 10px;
+  font-size: 1rem;
+  appearance: none;
+  text-align: center;
 }
 
-.cycle-btn:active {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-button, #category-select {
-  touch-action: manipulation;
-  border: #333 solid 1px !important;
-}
-
-button,
-select,
-input[type="file"] {
-  border-radius: 20px !important;
+#top-bar button:hover, #bottom-bar button:hover, #category-select:hover {
+  background-color: transparent !important;
+  background-image: url("/nav-bg.png");
+  border: none !important;
 }
 
 /* The viewport where the image or text goes */
@@ -217,11 +207,6 @@ input[type="file"] {
   color: white;
 }
 
-.modal-buttons button[type="button"] {
-  background-color: #f44336;
-  color: white;
-}
-
 /* Footer (debug / messages) */
 #footer-msg {
   height: 30px;
@@ -244,12 +229,9 @@ input[type="file"] {
     flex-direction: column;
     gap: 5px;
   }
-  
-  #top-bar select,
-  #top-bar button {
-    padding: 10px;
-    font-size: 0.9rem;
-    width: 100%; /* Make buttons full width on mobile */
+
+  .dropdown {
+    width: 100%;
   }
   
   #picker-grid {

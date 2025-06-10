@@ -1,0 +1,46 @@
+<div class="modal" [class.show]="visible">
+  <div class="modal-content">
+    <h2>Manage Images</h2>
+    
+    <!-- Filters -->
+    <div class="filters">
+      <select [(ngModel)]="selectedSection" title="Section Filter" (ngModelChange)="onFilterChange()">
+        <option value="">All Sections</option>
+        <option *ngFor="let section of sections" [value]="section">
+          {{ section | titlecase }}
+        </option>
+      </select>
+    </div>
+    
+    <div *ngIf="loading" class="loading">
+      Loading images...
+    </div>
+    
+    <!-- Images Grid -->
+    <div class="images-grid" *ngIf="!loading">
+      <div *ngFor="let item of filteredItems" class="image-item">
+        <div class="image-preview">
+          <img [src]="getImageUrl(item)" title="Clothing Image" [alt]="item.label || item.filename" />
+        </div>
+        <div class="image-info">
+          <div class="image-name">{{ item.label || item.filename }}</div>
+          <div class="image-details">
+            <span class="image-type">{{ item.type | titlecase }}</span>
+            <span class="image-date">{{ item.created_at | date:'short' }}</span>
+          </div>
+        </div>
+        <button (click)="deleteItem(item)" class="delete-btn" title="Delete Image">
+          🗑️
+        </button>
+      </div>
+      
+      <div *ngIf="filteredItems.length === 0" class="no-images">
+        No images found matching the current filters.
+      </div>
+    </div>
+    
+    <div class="modal-buttons">
+      <button type="button" (click)="close()">Close</button>
+    </div>
+  </div>
+</div>

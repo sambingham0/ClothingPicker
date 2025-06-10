@@ -4,10 +4,13 @@ import { TitleCasePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ClothesService, ClothingItem } from '../services/clothes.service';
 import { UploadModal } from '../upload-modal/upload-modal';
+import { ManageImagesModal } from '../manage-images-modal/manage-images-modal';
 import { ManagePresetsModal } from '../manage-presets-modal/manage-presets-modal';
 import { NamePresetModal } from '../name-preset-modal/name-preset-modal';
 import { UserProfileModal } from '../user-profile-modal/user-profile-modal';
 import { OutfitService, Outfit } from '../services/outfit.service';
+import { ClickOutsideDirective } from '../directives/click-outside.directive';
+import { WeatherModal } from '../weather-modal/weather-modal';
 
 type Section = 'layers' | 'tops' | 'bottoms';
 
@@ -15,10 +18,11 @@ type Section = 'layers' | 'tops' | 'bottoms';
   selector: 'app-picker',
   templateUrl: './picker.html',
   styleUrl: './picker.css',
-  imports: [FormsModule, TitleCasePipe, CommonModule, UserProfileModal, UploadModal, ManagePresetsModal, NamePresetModal],
+  imports: [FormsModule, TitleCasePipe, CommonModule, UserProfileModal, UploadModal, ManageImagesModal ,ManagePresetsModal, NamePresetModal, WeatherModal, ClickOutsideDirective],
 })
 export class Picker implements OnInit {
   @ViewChild('uploadModal') uploadModal!: UploadModal;
+  @ViewChild('manageImagesModal') manageImagesModal!: ManageImagesModal;
   @ViewChild('managePresetsModal') managePresetsModal!: ManagePresetsModal;
   @ViewChild('namePresetModal') namePresetModal!: NamePresetModal;
   @ViewChild('userProfileModal') userProfileModal!: UserProfileModal;
@@ -37,6 +41,12 @@ export class Picker implements OnInit {
   // Store loaded presets
   presets: Outfit[] = [];
   currentPresetIndex = 0;
+
+  // Track if presets menu is open
+  presetsMenuOpen = false;
+
+  // Track if uploads menu is open
+  uploadsMenuOpen = false;
 
   // Store pending preset images for modal workflow
   private pendingPresetImages: string[] | null = null;
@@ -224,16 +234,46 @@ export class Picker implements OnInit {
     this.namePresetModal.visible = true;
   }
 
-  openUploadModal() {
-    this.uploadModal.visible = true;
-  }
-
   openManagePresetsModal() {
     this.managePresetsModal.visible = true;
   }
 
   openUserProfileModal() {
     this.userProfileModal.visible = true;
+  }
+
+  togglePresetsMenu() {
+    this.presetsMenuOpen = !this.presetsMenuOpen;
+  }
+
+  openPresetsMenu() {
+    this.presetsMenuOpen = true;
+  }
+
+  closePresetsMenu() {
+    this.presetsMenuOpen = false;
+  }
+
+  toggleUploadsMenu() {
+    this.uploadsMenuOpen = !this.uploadsMenuOpen;
+  }
+
+  openUploadsMenu() {
+    this.uploadsMenuOpen = true;
+  }
+
+  closeUploadsMenu() {
+    this.uploadsMenuOpen = false;
+  }
+
+  openUploadModal() {
+    this.uploadModal.visible = true;
+    this.closeUploadsMenu();
+  }
+
+  openManageImagesModal() {
+    this.manageImagesModal.visible = true;
+    this.closeUploadsMenu();
   }
 
   onCategoryChange(category: string) {

@@ -4,7 +4,6 @@ const db = require('../models/db');
 const authMiddleware = require('../middlewares/authMiddleware');
 const upload = require('../utils/upload');
 
-// GET /api/clothes/:category/:section
 router.get('/:category/:section', authMiddleware, async (req, res) => {
   const userId = req.user.id;
   const { category, section } = req.params;
@@ -12,15 +11,16 @@ router.get('/:category/:section', authMiddleware, async (req, res) => {
   try {
     // Get user's uploaded items for this category/section
     const result = await db.query(
-      'SELECT id, filename, type FROM clothing_items WHERE user_id = $1 AND type = $2',
-      [userId, section]
+      'SELECT id, filename, type, category FROM clothing_items WHERE user_id = $1 AND type = $2 AND category = $3',
+      [userId, section, category]
     );
     
     // Convert to objects with ID and URL
     const userItems = result.rows.map(row => ({
       id: row.id,
       url: `/uploads/${row.filename}`,
-      type: row.type
+      type: row.type,
+      category: row.category
     }));
     
     res.json(userItems);
@@ -42,12 +42,15 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req, res) =
   if (!section) {
     return res.status(400).json({ error: 'Section is required.' });
   }
+  if (!category) {
+    return res.status(400).json({ error: 'Category is required.' });
+  }
 
   try {
-    // Save to database
+    // Save to database with category
     const result = await db.query(
-      'INSERT INTO clothing_items (user_id, type, filename) VALUES ($1, $2, $3) RETURNING id, filename',
-      [userId, section, file.filename]
+      'INSERT INTO clothing_items (user_id, type, filename, category) VALUES ($1, $2, $3, $4) RETURNING id, filename',
+      [userId, section, file.filename, category]
     );
     
     // Return the URL of the uploaded image

@@ -57,17 +57,17 @@ import {
   ɵɵinject,
   ɵɵinjectAttribute,
   ɵɵstyleProp
-} from "./chunk-KJ2UX65A.js";
+} from "./chunk-32W7TYYW.js";
 import {
   Subject
-} from "./chunk-4DJR3ZNH.js";
+} from "./chunk-RTGP7ALM.js";
 import {
   __async,
   __spreadProps,
   __spreadValues
-} from "./chunk-5K356HEJ.js";
+} from "./chunk-WDMUDEB6.js";
 
-// node_modules/@angular/common/fesm2022/location-DTVjZRwU.mjs
+// node_modules/@angular/common/fesm2022/location-BIEtBxGx.mjs
 var _DOM = null;
 function getDOM() {
   return _DOM;
@@ -554,7 +554,7 @@ function _stripOrigin(baseHref) {
   return baseHref;
 }
 
-// node_modules/@angular/common/fesm2022/common_module-B4apSsk3.mjs
+// node_modules/@angular/common/fesm2022/common_module-D4mHDfs1.mjs
 var HashLocationStrategy = class _HashLocationStrategy extends LocationStrategy {
   _platformLocation;
   _baseHref = "";
@@ -3710,7 +3710,7 @@ function isPlatformBrowser(platformId) {
 function isPlatformServer(platformId) {
   return platformId === PLATFORM_SERVER_ID;
 }
-var VERSION = new Version("20.0.1");
+var VERSION = new Version("20.0.2");
 var ViewportScroller = class _ViewportScroller {
   // De-sugared tree-shakable injection
   // See #23917
@@ -5142,14 +5142,14 @@ export {
 };
 /*! Bundled license information:
 
-@angular/common/fesm2022/location-DTVjZRwU.mjs:
-@angular/common/fesm2022/common_module-B4apSsk3.mjs:
+@angular/common/fesm2022/location-BIEtBxGx.mjs:
+@angular/common/fesm2022/common_module-D4mHDfs1.mjs:
 @angular/common/fesm2022/platform_navigation-B45Jeakb.mjs:
 @angular/common/fesm2022/common.mjs:
   (**
-   * @license Angular v20.0.1
+   * @license Angular v20.0.2
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-OHTOMNEQ.js.map
+//# sourceMappingURL=chunk-CJUWUCEC.js.map

@@ -1,7 +1,7 @@
 import {
   Title
-} from "./chunk-FMR6U4UO.js";
-import "./chunk-DLL7T26C.js";
+} from "./chunk-COV4CHMZ.js";
+import "./chunk-F7BRYWJP.js";
 import {
   HashLocationStrategy,
   LOCATION_INITIALIZED,
@@ -9,8 +9,8 @@ import {
   LocationStrategy,
   PathLocationStrategy,
   ViewportScroller
-} from "./chunk-OHTOMNEQ.js";
-import "./chunk-4XXGXEHL.js";
+} from "./chunk-CJUWUCEC.js";
+import "./chunk-W7ENOTKE.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -81,12 +81,12 @@ import {
   ɵɵloadQuery,
   ɵɵqueryRefresh,
   ɵɵsanitizeUrlOrResourceUrl
-} from "./chunk-KJ2UX65A.js";
+} from "./chunk-32W7TYYW.js";
 import {
   defer,
   isObservable
-} from "./chunk-TYLNY5KT.js";
-import "./chunk-FQBI3WRC.js";
+} from "./chunk-G6ECYYJH.js";
+import "./chunk-YVXMBCE5.js";
 import {
   BehaviorSubject,
   ConnectableObservable,
@@ -119,14 +119,14 @@ import {
   takeUntil,
   tap,
   throwError
-} from "./chunk-4DJR3ZNH.js";
+} from "./chunk-RTGP7ALM.js";
 import {
   __async,
   __spreadProps,
   __spreadValues
-} from "./chunk-5K356HEJ.js";
+} from "./chunk-WDMUDEB6.js";
 
-// node_modules/@angular/router/fesm2022/router-BCAMvkKO.mjs
+// node_modules/@angular/router/fesm2022/router-CsukTOog.mjs
 var PRIMARY_OUTLET = "primary";
 var RouteTitleKey = Symbol("RouteTitle");
 var ParamsAsMap = class {
@@ -4779,7 +4779,7 @@ function validateCommands(commands) {
   }
 }
 
-// node_modules/@angular/router/fesm2022/router_module-CmZ6FD0-.mjs
+// node_modules/@angular/router/fesm2022/router_module-DTmwsUYo.mjs
 var RouterLink = class _RouterLink {
   router;
   route;
@@ -5961,7 +5961,7 @@ function mapToCanDeactivate(providers) {
 function mapToResolve(provider) {
   return (...params) => inject(provider).resolve(...params);
 }
-var VERSION = new Version("20.0.1");
+var VERSION = new Version("20.0.2");
 export {
   ActivatedRoute,
   ActivatedRouteSnapshot,
@@ -6044,11 +6044,11 @@ export {
 };
 /*! Bundled license information:
 
-@angular/router/fesm2022/router-BCAMvkKO.mjs:
-@angular/router/fesm2022/router_module-CmZ6FD0-.mjs:
+@angular/router/fesm2022/router-CsukTOog.mjs:
+@angular/router/fesm2022/router_module-DTmwsUYo.mjs:
 @angular/router/fesm2022/router.mjs:
   (**
-   * @license Angular v20.0.1
+   * @license Angular v20.0.2
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)

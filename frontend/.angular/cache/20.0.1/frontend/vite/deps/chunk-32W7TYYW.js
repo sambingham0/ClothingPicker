@@ -4,12 +4,12 @@ import {
   Subject,
   Subscription,
   map
-} from "./chunk-4DJR3ZNH.js";
+} from "./chunk-RTGP7ALM.js";
 import {
   __async,
   __spreadProps,
   __spreadValues
-} from "./chunk-5K356HEJ.js";
+} from "./chunk-WDMUDEB6.js";
 
 // node_modules/@angular/core/fesm2022/primitives/di.mjs
 var _currentInjector = void 0;
@@ -32,7 +32,7 @@ function isNotFound(e) {
   return e === NOT_FOUND || e?.name === "ɵNotFound";
 }
 
-// node_modules/@angular/core/fesm2022/signal-BZ1SD--i.mjs
+// node_modules/@angular/core/fesm2022/signal-nCiHhWf6.mjs
 function defaultEquals(a, b) {
   return Object.is(a, b);
 }
@@ -361,7 +361,7 @@ function signalValueChanged(node) {
   postSignalSetFn?.(node);
 }
 
-// node_modules/@angular/core/fesm2022/untracked-RA6XPQ1Z.mjs
+// node_modules/@angular/core/fesm2022/untracked-DmD_2MlC.mjs
 function createLinkedSignal(sourceFn, computationFn, equalityFn) {
   const node = Object.create(LINKED_SIGNAL_NODE);
   node.source = sourceFn;
@@ -467,7 +467,7 @@ var WATCH_NODE = (() => {
   });
 })();
 
-// node_modules/@angular/core/fesm2022/root_effect_scheduler-C4AUixQF.mjs
+// node_modules/@angular/core/fesm2022/root_effect_scheduler-DCy1y1b8.mjs
 var ERROR_DETAILS_PAGE_BASE_URL = "https://angular.dev/errors";
 var XSS_SECURITY_URL = "https://angular.dev/best-practices/security#preventing-cross-site-scripting-xss";
 var RuntimeError = class extends Error {
@@ -2872,7 +2872,7 @@ var Attribute = {
   JSACTION: "jsaction"
 };
 
-// node_modules/@angular/core/fesm2022/debug_node-B9JawCEy.mjs
+// node_modules/@angular/core/fesm2022/debug_node-JnOYh9kg.mjs
 function noSideEffects(fn) {
   return { toString: fn }.toString();
 }
@@ -7396,7 +7396,7 @@ function renderView(tView, lView, context) {
     }
     throw error;
   } finally {
-    lView[FLAGS] &= -5;
+    lView[FLAGS] &= ~4;
     leaveView();
   }
 }
@@ -8260,29 +8260,34 @@ function detectChangesInView(lView, mode) {
   if (consumer) {
     consumer.dirty = false;
   }
-  lView[FLAGS] &= -9217;
+  lView[FLAGS] &= ~(8192 | 1024);
   if (shouldRefreshView) {
     refreshView(tView, lView, tView.template, lView[CONTEXT]);
   } else if (flags & 8192) {
-    if (!isInCheckNoChangesPass) {
-      runEffectsInView(lView);
-    }
-    detectChangesInEmbeddedViews(
-      lView,
-      1
-      /* ChangeDetectionMode.Targeted */
-    );
-    const components = tView.components;
-    if (components !== null) {
-      detectChangesInChildComponents(
+    const prevConsumer = setActiveConsumer(null);
+    try {
+      if (!isInCheckNoChangesPass) {
+        runEffectsInView(lView);
+      }
+      detectChangesInEmbeddedViews(
         lView,
-        components,
         1
         /* ChangeDetectionMode.Targeted */
       );
-    }
-    if (!isInCheckNoChangesPass) {
-      addAfterRenderSequencesForView(lView);
+      const components = tView.components;
+      if (components !== null) {
+        detectChangesInChildComponents(
+          lView,
+          components,
+          1
+          /* ChangeDetectionMode.Targeted */
+        );
+      }
+      if (!isInCheckNoChangesPass) {
+        addAfterRenderSequencesForView(lView);
+      }
+    } finally {
+      setActiveConsumer(prevConsumer);
     }
   }
 }
@@ -8418,7 +8423,7 @@ function detachView(lContainer, removeIndex) {
     }
     viewToDetach[PARENT] = null;
     viewToDetach[NEXT] = null;
-    viewToDetach[FLAGS] &= -129;
+    viewToDetach[FLAGS] &= ~128;
   }
   return viewToDetach;
 }
@@ -8619,7 +8624,7 @@ var ViewRef = class {
    * ```
    */
   detach() {
-    this._lView[FLAGS] &= -129;
+    this._lView[FLAGS] &= ~128;
   }
   /**
    * Re-attaches a view to the change detection tree.
@@ -11149,7 +11154,7 @@ var ComponentFactory2 = class extends ComponentFactory$1 {
   }
 };
 function createRootTView(rootSelectorOrNode, componentDef, componentBindings, directives) {
-  const tAttributes = rootSelectorOrNode ? ["ng-version", "20.0.1"] : (
+  const tAttributes = rootSelectorOrNode ? ["ng-version", "20.0.2"] : (
     // Extract attributes and classes from the first selector only to match VE behavior.
     extractAttrsAndClassesFromSelector(componentDef.selectors[0])
   );
@@ -15571,7 +15576,7 @@ var ApplicationRef = class _ApplicationRef {
    */
   synchronizeOnce() {
     if (this.dirtyFlags & 16) {
-      this.dirtyFlags &= -17;
+      this.dirtyFlags &= ~16;
       this.rootEffectScheduler.flush();
     }
     let ranDetectChanges = false;
@@ -15580,7 +15585,7 @@ var ApplicationRef = class _ApplicationRef {
         this.dirtyFlags & 1
         /* ApplicationRefDirtyFlags.ViewTreeGlobal */
       );
-      this.dirtyFlags &= -8;
+      this.dirtyFlags &= ~7;
       this.dirtyFlags |= 8;
       for (let { _lView } of this.allViews) {
         if (!useGlobalCheck && !requiresRefreshOrTraversal(_lView)) {
@@ -15596,7 +15601,7 @@ var ApplicationRef = class _ApplicationRef {
         detectChangesInternal(_lView, mode);
         ranDetectChanges = true;
       }
-      this.dirtyFlags &= -5;
+      this.dirtyFlags &= ~4;
       this.syncDirtyFlagsWithViews();
       if (this.dirtyFlags & (7 | 16)) {
         return;
@@ -15607,7 +15612,7 @@ var ApplicationRef = class _ApplicationRef {
       this._rendererFactory?.end?.();
     }
     if (this.dirtyFlags & 8) {
-      this.dirtyFlags &= -9;
+      this.dirtyFlags &= ~8;
       this.afterRenderManager.execute();
     }
     this.syncDirtyFlagsWithViews();
@@ -15631,7 +15636,7 @@ var ApplicationRef = class _ApplicationRef {
       this.dirtyFlags |= 2;
       return;
     } else {
-      this.dirtyFlags &= -8;
+      this.dirtyFlags &= ~7;
     }
   }
   /**
@@ -18663,7 +18668,7 @@ function setTStylingRangePrev(tStylingRange, previous) {
     32767
     /* StylingRange.UNSIGNED_MASK */
   );
-  return tStylingRange & 131071 | previous << 17;
+  return tStylingRange & ~4294836224 | previous << 17;
 }
 function setTStylingRangePrevDuplicate(tStylingRange) {
   ngDevMode && assertNumber(tStylingRange, "expected number");
@@ -18681,7 +18686,7 @@ function setTStylingRangeNext(tStylingRange, next) {
     32767
     /* StylingRange.UNSIGNED_MASK */
   );
-  return tStylingRange & -131069 | //
+  return tStylingRange & ~131068 | //
   next << 2;
 }
 function getTStylingRangeNextDuplicate(tStylingRange) {
@@ -20069,7 +20074,7 @@ function resetProjectionState(tNode) {
     for (const current of tNode.projection) {
       if (isTNodeShape(current)) {
         current.projectionNext = null;
-        current.flags &= -3;
+        current.flags &= ~2;
       }
     }
     tNode.projection = null;
@@ -21873,7 +21878,7 @@ function getDebugNode(nativeNode) {
   return null;
 }
 
-// node_modules/@angular/core/fesm2022/resource-W6LObBPP.mjs
+// node_modules/@angular/core/fesm2022/resource-BarKSp_3.mjs
 var OutputEmitterRef = class {
   destroyed = false;
   listeners = null;
@@ -22395,6 +22400,16 @@ function setParsed(text, parsed) {
 }
 var EventType = {
   /**
+   * Mouse middle click, introduced in Chrome 55 and not yet supported on
+   * other browsers.
+   */
+  AUXCLICK: "auxclick",
+  /**
+   * The change event fired by browsers when the `value` attribute of input,
+   * select, and textarea elements are changed.
+   */
+  CHANGE: "change",
+  /**
    * The click event. In addEvent() refers to all click events, in the
    * jsaction attribute it refers to the unmodified click and Enter/Space
    * keypress events.  In the latter case, a jsaction click will be triggered,
@@ -22408,6 +22423,12 @@ var EventType = {
    * click event.
    */
   CLICKMOD: "clickmod",
+  /**
+   * Specifies the jsaction for a click-only event.  Click-only doesn't take
+   * into account the case where an element with focus receives an Enter/Space
+   * keypress.  This event isn't separately enabled in addEvent().
+   */
+  CLICKONLY: "clickonly",
   /**
    * The dblclick event.
    */
@@ -22458,6 +22479,18 @@ var EventType = {
    */
   KEYUP: "keyup",
   /**
+   * The mouseup event. Can either be used directly or used implicitly to
+   * capture mouseup events. In addEvent(), it represents a regular DOM
+   * mouseup event.
+   */
+  MOUSEUP: "mouseup",
+  /**
+   * The mousedown event. Can either be used directly or used implicitly to
+   * capture mouseenter events. In addEvent(), it represents a regular DOM
+   * mouseover event.
+   */
+  MOUSEDOWN: "mousedown",
+  /**
    * The mouseover event. Can either be used directly or used implicitly to
    * capture mouseenter events. In addEvent(), it represents a regular DOM
    * mouseover event.
@@ -22479,6 +22512,22 @@ var EventType = {
    * element being entered within a DOM tree.
    */
   MOUSELEAVE: "mouseleave",
+  /**
+   * The mousemove event.
+   */
+  MOUSEMOVE: "mousemove",
+  /**
+   * The pointerup event. Can either be used directly or used implicitly to
+   * capture pointerup events. In addEvent(), it represents a regular DOM
+   * pointerup event.
+   */
+  POINTERUP: "pointerup",
+  /**
+   * The pointerdown event. Can either be used directly or used implicitly to
+   * capture pointerenter events. In addEvent(), it represents a regular DOM
+   * mouseover event.
+   */
+  POINTERDOWN: "pointerdown",
   /**
    * The pointerover event. Can either be used directly or used implicitly to
    * capture pointerenter events. In addEvent(), it represents a regular DOM
@@ -22502,6 +22551,26 @@ var EventType = {
    */
   POINTERLEAVE: "pointerleave",
   /**
+   * The pointermove event.
+   */
+  POINTERMOVE: "pointermove",
+  /**
+   * The pointercancel event.
+   */
+  POINTERCANCEL: "pointercancel",
+  /**
+   * The gotpointercapture event is fired when
+   * Element.setPointerCapture(pointerId) is called on a mouse input, or
+   * implicitly when a touch input begins.
+   */
+  GOTPOINTERCAPTURE: "gotpointercapture",
+  /**
+   * The lostpointercapture event is fired when
+   * Element.releasePointerCapture(pointerId) is called, or implicitly after a
+   * touch input ends.
+   */
+  LOSTPOINTERCAPTURE: "lostpointercapture",
+  /**
    * The error event. The error event doesn't bubble, but you can use it in
    * addEvent() and jsaction anyway. EventContract does the right thing under
    * the hood (except in IE8 which does not use error events).
@@ -22513,6 +22582,10 @@ var EventType = {
    * under the hood.
    */
   LOAD: "load",
+  /**
+   * The unload event.
+   */
+  UNLOAD: "unload",
   /**
    * The touchstart event. Bubbles, will only ever fire in browsers with
    * touch support.
@@ -22529,11 +22602,28 @@ var EventType = {
    */
   TOUCHMOVE: "touchmove",
   /**
+   * The input event.
+   */
+  INPUT: "input",
+  /**
+   * The scroll event.
+   */
+  SCROLL: "scroll",
+  /**
    * The toggle event. The toggle event doesn't bubble, but you can use it in
    * addEvent() and jsaction anyway. EventContract does the right thing
    * under the hood.
    */
-  TOGGLE: "toggle"
+  TOGGLE: "toggle",
+  /**
+   * A custom event. The actual custom event type is declared as the 'type'
+   * field in the event details. Supported in Firefox 6+, IE 9+, and all Chrome
+   * versions.
+   *
+   * This is an internal name. Users should use jsaction's fireCustomEvent to
+   * fire custom events instead of relying on this type to create them.
+   */
+  CUSTOM: "_custom"
 };
 var MOUSE_SPECIAL_EVENT_TYPES = [
   EventType.MOUSEENTER,
@@ -22722,6 +22812,11 @@ var EventContractContainer = class {
   }
 };
 var Char = {
+  /**
+   * The separator between the namespace and the action name in the
+   * jsaction attribute value.
+   */
+  NAMESPACE_ACTION_SEPARATOR: ".",
   /**
    * The separator between the event name and action in the jsaction
    * attribute value.
@@ -23647,7 +23742,7 @@ var Version = class {
     this.patch = parts.slice(2).join(".");
   }
 };
-var VERSION = new Version("20.0.1");
+var VERSION = new Version("20.0.2");
 function compileNgModuleFactory(injector, options, moduleType) {
   ngDevMode && assertNgModuleType(moduleType);
   const moduleFactory = new NgModuleFactory2(moduleType);
@@ -25423,7 +25518,7 @@ function annotateForHydration(appRef, doc) {
     capture: /* @__PURE__ */ new Set()
   };
   const deferBlocks = /* @__PURE__ */ new Map();
-  appRef.injector.get(APP_ID);
+  const appId = appRef.injector.get(APP_ID);
   for (const viewRef of viewRefs) {
     const lNode = getLNodeForHydration(viewRef);
     if (lNode !== null) {
@@ -25435,6 +25530,7 @@ function annotateForHydration(appRef, doc) {
         i18nChildren: /* @__PURE__ */ new Map(),
         eventTypesToReplay,
         shouldReplayEvents,
+        appId,
         deferBlocks
       };
       if (isLContainer(lNode)) {
@@ -26731,24 +26827,24 @@ export {
 /*! Bundled license information:
 
 @angular/core/fesm2022/primitives/di.mjs:
-@angular/core/fesm2022/signal-BZ1SD--i.mjs:
-@angular/core/fesm2022/untracked-RA6XPQ1Z.mjs:
+@angular/core/fesm2022/signal-nCiHhWf6.mjs:
+@angular/core/fesm2022/untracked-DmD_2MlC.mjs:
 @angular/core/fesm2022/weak_ref-BaIq-pgY.mjs:
 @angular/core/fesm2022/primitives/signals.mjs:
-@angular/core/fesm2022/root_effect_scheduler-C4AUixQF.mjs:
+@angular/core/fesm2022/root_effect_scheduler-DCy1y1b8.mjs:
 @angular/core/fesm2022/attribute-BWp59EjE.mjs:
-@angular/core/fesm2022/resource-W6LObBPP.mjs:
+@angular/core/fesm2022/resource-BarKSp_3.mjs:
 @angular/core/fesm2022/primitives/event-dispatch.mjs:
   (**
-   * @license Angular v20.0.1
+   * @license Angular v20.0.2
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
 
-@angular/core/fesm2022/debug_node-B9JawCEy.mjs:
+@angular/core/fesm2022/debug_node-JnOYh9kg.mjs:
 @angular/core/fesm2022/core.mjs:
   (**
-   * @license Angular v20.0.1
+   * @license Angular v20.0.2
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
@@ -26760,7 +26856,7 @@ export {
    * found in the LICENSE file at https://angular.dev/license
    *)
 
-@angular/core/fesm2022/debug_node-B9JawCEy.mjs:
+@angular/core/fesm2022/debug_node-JnOYh9kg.mjs:
   (*!
    * @license
    * Copyright Google LLC All Rights Reserved.
@@ -26769,4 +26865,4 @@ export {
    * found in the LICENSE file at https://angular.dev/license
    *)
 */
-//# sourceMappingURL=chunk-KJ2UX65A.js.map
+//# sourceMappingURL=chunk-32W7TYYW.js.map

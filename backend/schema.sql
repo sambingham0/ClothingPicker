@@ -29,3 +29,5 @@ CREATE TABLE IF NOT EXISTS "outfit_items" (
   outfit_id UUID REFERENCES outfits(id) ON DELETE CASCADE,
   clothing_item_id UUID REFERENCES clothing_items(id) ON DELETE CASCADE
 );
+
+ALTER TABLE clothing_items ADD COLUMN category VARCHAR(50);

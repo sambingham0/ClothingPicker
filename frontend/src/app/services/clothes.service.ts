@@ -6,8 +6,13 @@ import { environment } from '../../environments/environment';
 
 export interface ClothingItem {
   id: number;
-  url: string;
   type: string;
+  category: string;
+  filename: string;
+  label?: string;
+  url: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 @Injectable({
@@ -37,6 +42,14 @@ export class ClothesService {
     return this.http.delete<void>(`${this.apiUrl}/clothes`, {
       body: { imageUrl }
     });
+  }
+
+  getAllItems() {
+    return this.http.get<ClothingItem[]>(`${this.apiUrl}/items`);
+  }
+
+  deleteItem(itemId: number) {
+    return this.http.delete(`${this.apiUrl}/items/${itemId}`);
   }
 
   getCategories(): string[] {

@@ -20,10 +20,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      COMPOSE_BAKE: true
-      # Override .env if needed; docker-compose will inject these
       PORT: 3000
-      JWT_SECRET: supersecretkey        # You can override for production later
+      JWT_SECRET: supersecretkey
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/clothes_db
       UPLOAD_DIR: /usr/src/app/uploads
     volumes:

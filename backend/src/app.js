@@ -9,6 +9,7 @@ const userRoutes = require('./routes/users');
 const itemRoutes = require('./routes/items');
 const outfitRoutes = require('./routes/outfits');
 const clothesRoutes = require('./routes/clothes');
+const weatherRoutes = require('./routes/weather');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/outfits', outfitRoutes);
 app.use('/api/clothes', clothesRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // Healthcheck
 app.get('/ping', (req, res) => {

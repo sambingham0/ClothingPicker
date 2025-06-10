@@ -1,7 +1,7 @@
 import {
   getDOM
-} from "./chunk-OHTOMNEQ.js";
-import "./chunk-4XXGXEHL.js";
+} from "./chunk-CJUWUCEC.js";
+import "./chunk-W7ENOTKE.js";
 import {
   ChangeDetectorRef,
   Directive,
@@ -42,20 +42,20 @@ import {
   ɵɵdirectiveInject,
   ɵɵgetInheritedFactory,
   ɵɵlistener
-} from "./chunk-KJ2UX65A.js";
+} from "./chunk-32W7TYYW.js";
 import {
   forkJoin
-} from "./chunk-TYLNY5KT.js";
-import "./chunk-FQBI3WRC.js";
+} from "./chunk-G6ECYYJH.js";
+import "./chunk-YVXMBCE5.js";
 import {
   Subject,
   from,
   map
-} from "./chunk-4DJR3ZNH.js";
+} from "./chunk-RTGP7ALM.js";
 import {
   __spreadProps,
   __spreadValues
-} from "./chunk-5K356HEJ.js";
+} from "./chunk-WDMUDEB6.js";
 
 // node_modules/@angular/forms/fesm2022/forms.mjs
 var BaseControlValueAccessor = class _BaseControlValueAccessor {
@@ -6729,7 +6729,7 @@ var UntypedFormBuilder = class _UntypedFormBuilder extends FormBuilder {
     }]
   }], null, null);
 })();
-var VERSION = new Version("20.0.1");
+var VERSION = new Version("20.0.2");
 var FormsModule = class _FormsModule {
   /**
    * @description
@@ -6882,7 +6882,7 @@ export {
 
 @angular/forms/fesm2022/forms.mjs:
   (**
-   * @license Angular v20.0.1
+   * @license Angular v20.0.2
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)

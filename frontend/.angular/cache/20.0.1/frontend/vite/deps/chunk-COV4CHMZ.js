@@ -1,6 +1,6 @@
 import {
   withHttpTransferCache
-} from "./chunk-DLL7T26C.js";
+} from "./chunk-F7BRYWJP.js";
 import {
   CommonModule,
   DomAdapter,
@@ -8,11 +8,11 @@ import {
   getDOM,
   isPlatformServer,
   setRootDomAdapter
-} from "./chunk-OHTOMNEQ.js";
+} from "./chunk-CJUWUCEC.js";
 import {
   XhrFactory,
   parseCookieValue
-} from "./chunk-4XXGXEHL.js";
+} from "./chunk-W7ENOTKE.js";
 import {
   APP_ID,
   ApplicationModule,
@@ -72,12 +72,12 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-KJ2UX65A.js";
+} from "./chunk-32W7TYYW.js";
 import {
   __spreadValues
-} from "./chunk-5K356HEJ.js";
+} from "./chunk-WDMUDEB6.js";
 
-// node_modules/@angular/platform-browser/fesm2022/dom_renderer-BMDc99h8.mjs
+// node_modules/@angular/platform-browser/fesm2022/dom_renderer-Frqw9gM5.mjs
 var EVENT_MANAGER_PLUGINS = new InjectionToken(ngDevMode ? "EventManagerPlugins" : "");
 var EventManager = class _EventManager {
   _zone;
@@ -787,7 +787,7 @@ var EmulatedEncapsulationDomRenderer2 = class extends NoneEncapsulationDomRender
   }
 };
 
-// node_modules/@angular/platform-browser/fesm2022/browser-BcrUoxR1.mjs
+// node_modules/@angular/platform-browser/fesm2022/browser-DKgH74dt.mjs
 var BrowserDomAdapter = class _BrowserDomAdapter extends DomAdapter {
   supportsDOMEvents = true;
   static makeCurrent() {
@@ -1964,7 +1964,7 @@ function provideClientHydration(...features) {
   }
   return makeEnvironmentProviders([typeof ngDevMode !== "undefined" && ngDevMode ? provideZoneJsCompatibilityDetector() : [], withDomHydration(), featuresKind.has(HydrationFeatureKind.NoHttpTransferCache) || hasHttpTransferCacheOptions ? [] : withHttpTransferCache({}), providers]);
 }
-var VERSION = new Version("20.0.1");
+var VERSION = new Version("20.0.2");
 
 export {
   EVENT_MANAGER_PLUGINS,
@@ -2005,13 +2005,13 @@ export {
 };
 /*! Bundled license information:
 
-@angular/platform-browser/fesm2022/dom_renderer-BMDc99h8.mjs:
-@angular/platform-browser/fesm2022/browser-BcrUoxR1.mjs:
+@angular/platform-browser/fesm2022/dom_renderer-Frqw9gM5.mjs:
+@angular/platform-browser/fesm2022/browser-DKgH74dt.mjs:
 @angular/platform-browser/fesm2022/platform-browser.mjs:
   (**
-   * @license Angular v20.0.1
+   * @license Angular v20.0.2
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-FMR6U4UO.js.map
+//# sourceMappingURL=chunk-COV4CHMZ.js.map
