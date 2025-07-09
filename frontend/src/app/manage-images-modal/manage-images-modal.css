@@ -1,62 +1,71 @@
-.modal.show {
-  display: block !important;
-}
+/* ===================================
+   MANAGE IMAGES MODAL COMPONENT STYLES
+   =================================== */
 
+/* Modal Content Overrides */
 .modal-content {
-  background-color: white;
-  margin: 5% auto; /* Reduced margin for more screen space */
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%; /* Increased width utilization */
+  margin: 5% auto;
+  width: 90%;
   max-width: 600px;
-  max-height: 90vh; /* Limit height to 90% of viewport */
-  overflow-y: auto; /* Enable vertical scrolling */
-  display: flex;
-  flex-direction: column;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
+/* Filter Controls */
 .filters {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
   flex-wrap: wrap;
 }
 
 .filters select {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-white);
+  transition: border-color var(--transition-fast);
 }
 
+.filters select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+}
+
+/* Loading State */
 .loading {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
 }
 
+/* Images Grid Layout */
 .images-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
+  gap: var(--spacing-lg);
   max-height: 400px;
   overflow-y: auto;
-  padding: 10px 0;
+  padding: var(--spacing-md) 0;
 }
 
+/* Individual Image Items */
 .image-item {
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
   overflow: hidden;
   position: relative;
-  background: white;
-  transition: box-shadow 0.2s;
+  background: var(--bg-white);
+  transition: box-shadow var(--transition-fast);
 }
 
 .image-item:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
 
+/* Image Preview */
 .image-preview {
   width: 100%;
   height: 150px;
@@ -64,7 +73,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
 }
 
 .image-preview img {
@@ -73,30 +82,94 @@
   object-fit: contain;
 }
 
+/* Image Information */
 .image-info {
-  padding: 10px;
+  padding: var(--spacing-md);
 }
 
 .image-name {
   font-weight: bold;
-  font-size: 0.9em;
-  margin-bottom: 5px;
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
   word-break: break-word;
+  color: var(--text-primary);
 }
 
 .image-details {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8em;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  align-items: center;
 }
 
 .image-type {
-  background-color: #e9ecef;
+  background-color: var(--bg-light);
   padding: 2px 6px;
   border-radius: 3px;
   text-transform: uppercase;
-  font-size: 0.7em;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.image-date {
+  font-size: var(--font-size-xs);
+}
+
+/* Delete Button */
+.delete-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background-color: var(--danger-color);
+  color: var(--bg-white);
+  border: none;
+  border-radius: var(--border-radius-round);
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  transition: all var(--transition-fast);
+  opacity: 0.8;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Empty State */
+.no-images {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: var(--font-size-md);
+  grid-column: 1 / -1;
+  background-color: var(--bg-light);
+  border-radius: var(--border-radius-md);
+  border: 2px dashed var(--border-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+  }
+  
+  .image-preview {
+    height: 120px;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 5% auto;
+  }
 }
 
 .delete-btn {

@@ -63,7 +63,54 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 
-# Upload directories
+# Upload directories (user-generated content)
 backend/uploads/
 frontend/uploads/
 uploads/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Angular specific
+frontend/dist/
+frontend/.angular/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build artifacts
+build/
+dist/
+target/
+
+# Docker volumes and data
+docker-compose.override.yml
+.docker/
+postgres-data/
+pgdata/
+
+# Package lock files (will be regenerated)
+package-lock.json
+yarn.lock

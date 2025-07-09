@@ -15,9 +15,7 @@ services:
       - "5432:5432"
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: sbingham0913/clothingpicker-backend:latest
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -25,16 +23,14 @@ services:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/clothes_db
       UPLOAD_DIR: /usr/src/app/uploads
     volumes:
-      - ./backend/uploads:/usr/src/app/uploads
+      - backend_uploads:/usr/src/app/uploads
     depends_on:
       - postgres
     ports:
       - "3000:3000"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: sbingham0913/clothingpicker-frontend:latest
     restart: unless-stopped
     depends_on:
       -  backend
@@ -43,3 +39,4 @@ services:
 
 volumes:
   pgdata:
+  backend_uploads:

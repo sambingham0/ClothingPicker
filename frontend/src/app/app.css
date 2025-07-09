@@ -1,36 +1,121 @@
-/* styles.css */
+/* ===================================
+   GLOBAL CSS CUSTOM PROPERTIES
+   =================================== */
+:root {
+  /* Colors */
+  --primary-color: #8164b4;
+  --secondary-color: #3498db;
+  --success-color: #4caf50;
+  --danger-color: #f44336;
+  --warning-color: #ff9800;
+  --error-color: #e74c3c;
+  
+  /* Neutral Colors */
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-muted: #888;
+  --text-light: #6c757d;
+  
+  /* Background Colors */
+  --bg-primary: #f9f9f9;
+  --bg-white: #ffffff;
+  --bg-light: #f8f9fa;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-overlay-light: rgba(0, 0, 0, 0.05);
+  --bg-disabled: #f8f9fa;
+  --bg-error: #fdf2f2;
+  
+  /* Border Colors */
+  --border-color: #ccc;
+  --border-light: #ddd;
+  --border-lighter: #dee2e6;
+  --border-error: #fecaca;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 24px;
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-round: 50%;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --shadow-modal: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  
+  /* Typography */
+  --font-family: Arial, sans-serif;
+  --font-size-xs: 0.7em;
+  --font-size-sm: 0.8em;
+  --font-size-base: 0.9rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.1em;
+  --font-size-xl: 1.5rem;
+  
+  /* Transitions */
+  --transition-fast: 0.2s;
+  --transition-medium: 0.3s;
+  --transition-slow: 0.5s;
+  
+  /* Z-Index Scale */
+  --z-dropdown: 100;
+  --z-modal: 1000;
+  --z-weather: 500;
+  
+  /* Layout */
+  --header-height: 65px;
+  --max-content-width: 900px;
+  --image-height-desktop: 500px;
+  --image-height-mobile: 300px;
+  --modal-max-width: 500px;
+  --mobile-breakpoint: 768px;
+  
+  /* Button Sizes */
+  --btn-width: 150px;
+  --btn-height: 65px;
+  --btn-padding: var(--spacing-sm) var(--spacing-lg);
+}
 
-/* Reset some defaults */
+/* ===================================
+   GLOBAL RESET & BASE STYLES
+   =================================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* BODY should fill the viewport, use a neutral background */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
-  color: #333;
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-image: url("/bg_clothes.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   min-height: 100vh;
   margin: 0;
-  padding: 20px;
+  padding: var(--spacing-xl);
   overflow: hidden;
+  background: url("/bg_clothes.jpg") center/cover no-repeat fixed;
 }
 
-/* TOP BAR (controls) */
+/* ===================================
+   SHARED COMPONENT STYLES
+   =================================== */
+
+/* Navigation Bars */
 #top-bar {
   background-color: transparent;
   border: none;
-  padding: 10px;
+  padding: var(--spacing-md);
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -41,17 +126,17 @@ body {
   display: none;
 }
 
-/* MAIN PICKER GRID: 3 columns equally sized */
+/* Main Layout Grid */
 #picker-grid {
   display: flex;
-  flex: 1; /* take remaining height */
-  gap: 5px;
-  padding: 5px;
-  max-width: 900px;
+  flex: 1;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  max-width: var(--max-content-width);
   margin: 0 auto;
 }
 
-/* Each section’s container */
+/* Section Containers */
 .section-container {
   flex: 1;
   background-color: transparent;
@@ -62,44 +147,48 @@ body {
   justify-content: center;
 }
 
-/* Up / Down buttons */
-.cycle-btn {
-  background-image: url("/btn-bg.png");
+/* Navigation Buttons */
+#top-bar button, 
+#bottom-bar button, 
+#category-select {
+  background: url("/nav-bg.png") center/100% 100% no-repeat;
   background-color: transparent;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  color: #8164b4 !important;
-  border: none !important;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 10px;
-  margin: 0;
-}
-
-#top-bar button, #bottom-bar button, #category-select {
-  background-image: url("/nav-bg.png");
-  background-color: transparent;
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
   border: none;
   cursor: pointer;
-  width: 150px;
-  height: 65px;
-  padding: 10px;
-  font-size: 1rem;
+  width: var(--btn-width);
+  height: var(--btn-height);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-md);
   appearance: none;
   text-align: center;
+  transition: all var(--transition-fast);
 }
 
-#top-bar button:hover, #bottom-bar button:hover, #category-select:hover {
+#top-bar button:hover, 
+#bottom-bar button:hover, 
+#category-select:hover {
   background-color: transparent !important;
-  background-image: url("/nav-bg.png");
   border: none !important;
 }
 
-/* The viewport where the image or text goes */
+/* Cycle Buttons */
+.cycle-btn {
+  background: url("/btn-bg.png") center/contain no-repeat;
+  background-color: transparent;
+  color: var(--primary-color) !important;
+  border: none !important;
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  padding: var(--spacing-md);
+  margin: 0;
+  transition: transform var(--transition-fast);
+}
+
+.cycle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Image Viewport */
 .image-viewport {
   flex: 1;
   width: 100%;
@@ -109,26 +198,26 @@ body {
   background-color: transparent;
   position: relative;
   max-height: 600px;
-  padding: none;
+  padding: 0;
   margin: 0;
 }
 
-/* The image inside the viewport – max out to fit */
 .image-viewport img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   width: auto;
-  height: 500px;
+  height: var(--image-height-desktop);
 }
 
+/* Loading States */
 .image-viewport.loading {
   position: relative;
 }
 
 .image-viewport.loading img {
   opacity: 0.5;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-medium) ease;
 }
 
 .image-viewport.loading::after {
@@ -140,21 +229,19 @@ body {
   height: 30px;
   margin: -15px 0 0 -15px;
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #555;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border-top: 3px solid var(--text-secondary);
+  border-radius: var(--border-radius-round);
+  animation: app-spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+@keyframes app-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Modal styles */
+/* ===================================
+   SHARED MODAL STYLES
+   =================================== */
 .modal {
   display: none;
   position: fixed;
@@ -162,72 +249,116 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  background-color: var(--bg-overlay);
+  z-index: var(--z-modal);
+}
+
+.modal.show {
+  display: block !important;
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--bg-white);
   margin: 15% auto;
-  padding: 20px;
-  border-radius: 8px;
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-md);
   width: 80%;
-  max-width: 500px;
+  max-width: var(--modal-max-width);
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Modal Forms */
 #upload-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
 }
 
 #upload-form select,
 #upload-form input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
 }
 
+/* Modal Buttons */
 .modal-buttons {
   display: flex;
-  gap: 10px;
+  gap: var(--spacing-md);
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: var(--spacing-xl);
 }
 
 .modal-buttons button {
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: var(--btn-padding);
+  border: none;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: opacity var(--transition-fast);
+}
+
+.modal-buttons button:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .modal-buttons button[type="submit"] {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--success-color);
+  color: var(--bg-white);
 }
 
-/* Footer (debug / messages) */
+.modal-buttons button[type="submit"]:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+}
+
+.modal-buttons button[type="button"] {
+  background-color: var(--danger-color);
+  color: var(--bg-white);
+}
+
+/* ===================================
+   SHARED UTILITY CLASSES
+   =================================== */
+
+/* Error Messages */
+.error {
+  color: var(--error-color);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-error);
+  border: 1px solid var(--border-error);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Footer Messages */
 #footer-msg {
   height: 30px;
   text-align: center;
-  font-size: 0.9rem;
-  color: #888;
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
   flex-shrink: 0;
-  margin-bottom: 5px;
+  margin-bottom: var(--spacing-xs);
 }
 
-
-/* Mobile styles */
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
 @media (max-width: 768px) {
   body {
-    padding: 10px;
-    overflow-y: auto; /* Allow scrolling on mobile */
+    padding: var(--spacing-md);
+    overflow-y: auto;
   }
   
   #top-bar {
     flex-direction: column;
-    gap: 5px;
+    gap: var(--spacing-xs);
   }
 
   .dropdown {
@@ -236,29 +367,28 @@ body {
   
   #picker-grid {
     flex-direction: column;
-    gap: 10px;
+    gap: var(--spacing-md);
   }
   
   .image-viewport img {
-    height: 300px;
+    height: var(--image-height-mobile);
   }
   
   #bottom-bar {
     display: flex;
     justify-content: space-around;
-    padding: 10px;
+    padding: var(--spacing-md);
     background-color: transparent;
   }
   
-  /* Additional mobile optimizations */
   .modal-content {
     width: 95%;
     margin: 5% auto;
-    padding: 15px;
+    padding: var(--spacing-lg);
   }
   
   .preset-info {
-    margin: 5px;
-    padding: 8px;
+    margin: var(--spacing-xs);
+    padding: var(--spacing-sm);
   }
 }

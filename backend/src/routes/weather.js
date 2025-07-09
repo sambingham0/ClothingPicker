@@ -11,19 +11,30 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 
   try {
+    console.log('Weather API called with lat:', lat, 'lon:', lon);
+    
     const apiKey = process.env.OPENWEATHER_API_KEY;
+    console.log('API Key exists:', !!apiKey);
+    
     if (!apiKey) {
+      console.log('No API key found');
       return res.status(500).json({ error: 'Weather service not configured' });
     }
 
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    console.log('Fetching weather from:', url);
     
     const response = await fetch(url);
+    console.log('Weather API response status:', response.status);
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log('Weather API error response:', errorText);
       throw new Error(`Weather API responded with status: ${response.status}`);
     }
     
     const data = await response.json();
+    console.log('Weather data received:', data);
     
     // Transform the data to match your frontend interface
     const weatherData = {

@@ -1,46 +1,49 @@
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-}
+/* ===================================
+   USER PROFILE MODAL COMPONENT STYLES
+   =================================== */
 
-.modal.show {
-  display: block !important;
-}
-
+/* Modal Content Override */
 .modal-content {
-  background-color: white;
-  margin: 15% auto;
-  padding: 20px;
-  border-radius: 8px;
-  width: 80%;
   max-width: 400px;
 }
 
+/* User Information Display */
 .user-info {
-  margin: 20px 0;
+  margin: var(--spacing-xl) 0;
 }
 
 .user-detail {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border-lighter);
+}
+
+.user-detail:last-child {
+  border-bottom: none;
 }
 
 .user-detail label {
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
 }
 
 .user-detail span {
-  color: #666;
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+  word-break: break-word;
+}
+
+/* Logout Button Styling */
+.logout-btn {
+  background-color: var(--warning-color) !important;
+  color: var(--bg-white) !important;
+}
+
+.logout-btn:hover {
+  background-color: #e67e22 !important;
 }
 
 .modal-buttons {

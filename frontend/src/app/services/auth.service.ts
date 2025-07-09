@@ -26,7 +26,10 @@ export class AuthService {
         })
         .subscribe({
           next: (user) => this.currentUserSubject.next(user),
-          error: () => this.logout(),
+          error: (error) => {
+            console.warn('Token validation failed:', error);
+            this.logout();
+          },
         });
     }
   }

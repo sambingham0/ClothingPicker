@@ -1,56 +1,81 @@
+/* ===================================
+   LOGIN COMPONENT STYLES
+   =================================== */
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 20px;
+  background-color: var(--bg-light);
+  padding: var(--spacing-xl);
 }
 
 .login-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: var(--bg-white);
+  padding: var(--spacing-xxl);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 400px;
 }
 
+.login-card h2 {
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+}
+
+/* Form Styles */
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
   font-weight: 500;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
 }
 
 .form-group input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
   box-sizing: border-box;
+  transition: border-color var(--transition-fast);
 }
 
-.error {
-  color: #e74c3c;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+.form-group input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
+.form-group input.ng-invalid.ng-touched {
+  border-color: var(--error-color);
+}
+
+/* Submit Button */
 .submit-btn {
   width: 100%;
-  padding: 0.75rem;
-  background-color: #3498db;
-  color: white;
+  padding: var(--spacing-md);
+  background-color: var(--secondary-color);
+  color: var(--bg-white);
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: var(--spacing-md);
+  transition: background-color var(--transition-fast);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #2980b9;
 }
 
 .submit-btn:disabled {
@@ -58,16 +83,27 @@
   cursor: not-allowed;
 }
 
+/* Toggle Mode Section */
 .toggle-mode {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
 }
 
 .link-btn {
   background: none;
   border: none;
-  color: #3498db;
+  color: var(--secondary-color);
   cursor: pointer;
   text-decoration: underline;
-  margin-left: 0.5rem;
+  margin-left: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  transition: color var(--transition-fast);
 }
+
+.link-btn:hover {
+  color: #2980b9;
+}
+
+/* Error Messages - Inherits from global .error class */

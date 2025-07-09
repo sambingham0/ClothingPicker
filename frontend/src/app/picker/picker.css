@@ -1,60 +1,52 @@
+/* ===================================
+   PICKER COMPONENT STYLES
+   =================================== */
+
+/* Preset Information Display */
 .preset-info {
   text-align: center;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-  margin: 10px;
+  padding: var(--spacing-md);
+  background-color: var(--bg-overlay-light);
+  border-radius: var(--border-radius-md);
+  margin: var(--spacing-md);
 }
 
 .preset-name {
   font-weight: bold;
-  font-size: 1.1em;
-  margin-bottom: 5px;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
 }
 
 .preset-count {
-  color: #666;
-  font-size: 0.9em;
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
 }
 
-#save-preset-btn:disabled {
-  background-color: #ccc;
+/* Button States */
+#save-preset-btn:disabled,
+.dropdown-item:disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-light);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-#user-profile-btn:hover {
-  background-color: #e0e0e0;
+#user-profile-btn:hover,
+#presets-btn:hover,
+#presets-btn.active {
+  background-color: rgba(224, 224, 224, 0.3);
+  transition: background-color var(--transition-fast);
 }
 
-.preset-info {
-  text-align: center;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-  margin: 10px;
-}
+/* ===================================
+   DROPDOWN COMPONENTS
+   =================================== */
 
-.preset-name {
-  font-weight: bold;
-  font-size: 1.1em;
-  margin-bottom: 5px;
-}
-
-.preset-count {
-  color: #666;
-  font-size: 0.9em;
-}
-
-/* Dropdown Styles */
+/* Desktop Dropdowns */
 .dropdown {
   position: relative;
   display: inline-block;
-}
-
-#presets-btn:hover,
-#presets-btn.active {
-  background-color: #e0e0e0;
 }
 
 .dropdown-menu {
@@ -62,12 +54,12 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: transparent;
+  background-color: var(--bg-white);
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  z-index: 1000;
+  box-shadow: var(--shadow-modal);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  z-index: var(--z-dropdown);
   margin-top: 2px;
 }
 
@@ -78,37 +70,31 @@
 .dropdown-item {
   display: block;
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-fast);
+  color: var(--text-primary);
 }
 
 .dropdown-item:hover:not(:disabled) {
-  background-color: #f5f5f5;
-}
-
-.dropdown-item:disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.6;
+  background-color: var(--bg-light);
 }
 
 .dropdown-item:first-child {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+  border-top-left-radius: var(--border-radius-sm);
+  border-top-right-radius: var(--border-radius-sm);
 }
 
 .dropdown-item:last-child {
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: var(--border-radius-sm);
+  border-bottom-right-radius: var(--border-radius-sm);
 }
 
-/* Mobile dropdown styles */
+/* Mobile Dropdowns */
 .dropdown-mobile {
   position: relative;
   display: inline-block;
@@ -120,11 +106,11 @@
   bottom: 100%;
   left: 0;
   right: 0;
-  background-color: white;
-  box-shadow: 0px -8px 16px 0px rgba(0,0,0,0.2);
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  z-index: 1000;
+  background-color: var(--bg-white);
+  box-shadow: 0px -8px 16px 0px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  z-index: var(--z-dropdown);
   margin-bottom: 2px;
 }
 
@@ -135,22 +121,23 @@
 .dropdown-item-mobile {
   display: block;
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-fast);
+  color: var(--text-primary);
 }
 
 .dropdown-item-mobile:hover:not(:disabled) {
-  background-color: #f5f5f5;
+  background-color: var(--bg-light);
 }
 
 .dropdown-item-mobile:disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
+  background-color: var(--bg-disabled);
+  color: var(--text-light);
   cursor: not-allowed;
   opacity: 0.6;
 }
