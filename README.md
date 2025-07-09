@@ -5,11 +5,11 @@ A modern full-stack web application for organizing and selecting clothing outfit
 ## Features
 
 ### Core Functionality
-- **Visual Outfit Selection**: Three-panel interface (Layers, Tops, Bottoms) with intuitive drag-and-drop
+- **Visual Outfit Selection**: Three-panel interface (Layers, Tops, Bottoms)
 - **Category Filtering**: Browse by Casual, Athletic, or Sleep wear categories
-- **Random Outfit Generator**: AI-powered outfit suggestions based on available items
+- **Random Outfit Generator**: Outfit suggestions based on available items
 - **Layer Toggle**: Show/hide layer clothing items for seasonal flexibility
-- **Responsive Design**: Mobile-first design that works seamlessly on all devices
+- **Responsive Design**: Desktop-first design that works seamlessly on all devices
 
 ### Weather Integration
 - **Real-time Weather Data**: OpenWeatherMap API integration for current conditions
@@ -35,32 +35,6 @@ A modern full-stack web application for organizing and selecting clothing outfit
 - **Preset Management**: View, edit, and delete saved outfits through dedicated modal
 - **Database Persistence**: Outfits saved per user in PostgreSQL with relational structure
 - **Quick Access**: Easily load saved outfits with one click
-
-## Key Features Showcase
-
-### Visual Outfit Selection
-- **Three-Panel Interface**: Separate sections for layers, tops, and bottoms
-- **Category-Based Organization**: Casual, athletic, and sleep wear categories
-- **Drag-and-Drop Functionality**: Intuitive outfit building experience
-- **Random Outfit Generator**: AI-powered suggestions based on your wardrobe
-
-### Weather Integration
-- **Real-Time Weather Data**: Current conditions from OpenWeatherMap API
-- **Geolocation Support**: Automatic location detection
-- **Weather-Appropriate Suggestions**: Outfit recommendations based on temperature and conditions
-- **Collapsible Weather Widget**: Expandable weather display with detailed information
-
-### User Experience
-- **Mobile-First Design**: Responsive interface that works on all devices
-- **Secure Authentication**: JWT-based login system with password hashing
-- **Personal Wardrobe Management**: Upload and organize your own clothing photos
-- **Outfit Presets**: Save and quickly access your favorite combinations
-
-### Technical Excellence
-- **Modern Tech Stack**: Angular 20, Node.js, PostgreSQL
-- **Containerized Deployment**: Docker with production-ready images
-- **API Integration**: RESTful backend with comprehensive endpoints
-- **Database Design**: Normalized schema with proper relationships
 
 ## Technology Stack
 
