@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clothing Background Removal Test</title>
+</head>
+<body>
+    <h1>Upload Clothing Image</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" title="file" name="file" accept="image/*" required>
+        
+        <fieldset>
+            <legend>Clothing Type</legend>
+            <label><input type="radio" name="clothingType" value="top"> Top</label>
+            <label><input type="radio" name="clothingType" value="bottom"> Bottom</label>
+            <label><input type="radio" name="clothingType" value="layer"> Layer</label>
+            <label><input type="radio" name="clothingType" value="top_layer"> Top or Layer</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Clothing Major Color(s)</legend>
+            <label><input type="checkbox" name="clothingColor" value="red"> Red</label>
+            <label><input type="checkbox" name="clothingColor" value="blue"> Blue</label>
+            <label><input type="checkbox" name="clothingColor" value="green"> Green</label>
+            <label><input type="checkbox" name="clothingColor" value="black"> Black</label>
+            <label><input type="checkbox" name="clothingColor" value="white"> White</label>
+            <label><input type="checkbox" name="clothingColor" value="yellow"> Yellow</label>
+            <label><input type="checkbox" name="clothingColor" value="orange"> Orange</label>
+            <label><input type="checkbox" name="clothingColor" value="purple"> Purple</label>
+            <label><input type="checkbox" name="clothingColor" value="pink"> Pink</label>
+            <label><input type="checkbox" name="clothingColor" value="brown"> Brown</label>
+            <label><input type="checkbox" name="clothingColor" value="beige"> Beige</label>
+            <label><input type="checkbox" name="clothingColor" value="gray"> Gray</label>
+            <label><input type="checkbox" name="clothingColor" value="navy"> Navy</label>
+            <label><input type="checkbox" name="clothingColor" value="teal"> Teal</label>
+            <label><input type="checkbox" name="clothingColor" value="maroon"> Maroon</label>
+            <label><input type="checkbox" name="clothingColor" value="olive"> Olive</label>
+            <label><input type="checkbox" name="clothingColor" value="gold"> Gold</label>
+            <label><input type="checkbox" name="clothingColor" value="silver"> Silver</label>
+            <label><input type="checkbox" name="clothingColor" value="turquoise"> Turquoise</label>
+            <label><input type="checkbox" name="clothingColor" value="coral"> Coral</label>
+            <label><input type="checkbox" name="clothingColor" value="ivory"> Ivory</label>
+            <label><input type="checkbox" name="clothingColor" value="khaki"> Khaki</label>
+            <label><input type="checkbox" name="clothingColor" value="lavender"> Lavender</label>
+            <label><input type="checkbox" name="clothingColor" value="mint"> Mint</label>
+            <label><input type="checkbox" name="clothingColor" value="peach"> Peach</label>
+            <label><input type="checkbox" name="clothingColor" value="mustard"> Mustard</label>
+            <label><input type="checkbox" name="clothingColor" value="burgundy"> Burgundy</label>
+            <label><input type="checkbox" name="clothingColor" value="cream"> Cream</label>
+            <label><input type="checkbox" name="clothingColor" value="charcoal"> Charcoal</label>
+            <label><input type="checkbox" name="clothingColor" value="denim"> Denim</label>
+            <label><input type="checkbox" name="clothingColor" value="magenta"> Magenta</label>
+            <label><input type="checkbox" name="clothingColor" value="lime"> Lime</label>
+            <label><input type="checkbox" name="clothingColor" value="aqua"> Aqua</label>
+            <label><input type="checkbox" name="clothingColor" value="bronze"> Bronze</label>
+            <label><input type="checkbox" name="clothingColor" value="copper"> Copper</label>
+            <label><input type="checkbox" name="clothingColor" value="tan"> Tan</label>
+            <label><input type="checkbox" name="clothingColor" value="sand"> Sand</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Clothing Minor Color(s)</legend>
+            <label><input type="checkbox" name="clothingMinorColor" value="red"> Red</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="blue"> Blue</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="green"> Green</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="black"> Black</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="white"> White</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="yellow"> Yellow</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="orange"> Orange</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="purple"> Purple</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="pink"> Pink</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="brown"> Brown</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="beige"> Beige</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="gray"> Gray</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="navy"> Navy</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="teal"> Teal</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="maroon"> Maroon</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="olive"> Olive</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="gold"> Gold</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="silver"> Silver</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="turquoise"> Turquoise</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="coral"> Coral</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="ivory"> Ivory</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="khaki"> Khaki</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="lavender"> Lavender</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="mint"> Mint</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="peach"> Peach</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="mustard"> Mustard</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="burgundy"> Burgundy</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="cream"> Cream</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="charcoal"> Charcoal</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="denim"> Denim</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="magenta"> Magenta</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="lime"> Lime</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="aqua"> Aqua</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="bronze"> Bronze</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="copper"> Copper</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="tan"> Tan</label>
+            <label><input type="checkbox" name="clothingMinorColor" value="sand"> Sand</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Season</legend>
+            <label><input type="checkbox" name="season" value="spring"> Spring</label>
+            <label><input type="checkbox" name="season" value="summer"> Summer</label>
+            <label><input type="checkbox" name="season" value="fall"> Fall</label>
+            <label><input type="checkbox" name="season" value="winter"> Winter</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Favorite?</legend>
+            <label><input type="radio" name="isFavorite" value="true"> Yes</label>
+            <label><input type="radio" name="isFavorite" value="false"> No</label>
+        </fieldset>
+
+        <button type="submit">Upload & Remove Background</button>
+    </form>
+    <script src="main.js"></script>
+</body>
+</html>
