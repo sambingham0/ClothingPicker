@@ -34,8 +34,9 @@ def process_and_save_image(file):
     # Strip extension from original filename
     base_name = os.path.splitext(file.filename)[0]
     unique_id = uuid.uuid4().hex[:8]
-    save_path = f"storage/{base_name}_{unique_id}.png"
+    filename = f"{base_name}_{unique_id}.png"
+    save_path = f"storage/{filename}"
     final_img.save(save_path)
 
-    # Return result dict
-    return {"status": "saved", "image_path": save_path}
+    # Return result dict with only the filename
+    return {"status": "saved", "image_path": filename}

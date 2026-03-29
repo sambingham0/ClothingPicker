@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import sqlite3 as sql
@@ -6,6 +7,7 @@ from db.create_db import create_clothing_db, create_outfits_db
 from image_processing import process_and_save_image
 
 app = FastAPI()
+app.mount("/images", StaticFiles(directory="storage"), name="images")
 
 # Enable CORS for all origins (for development)
 app.add_middleware(
@@ -23,14 +25,14 @@ def startup_event():
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Clothing Stylist"}
 
 
 @app.get("/clothing")
 async def get_clothing():
     conn = sql.connect("clothing.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, type, image_path, color, minor_color, season, favorite FROM clothing")
+    cursor.execute("SELECT id, type, image_path, color, minor_color, season, fit FROM clothing")
     items = cursor.fetchall()
     conn.close()
     return [
@@ -38,10 +40,10 @@ async def get_clothing():
             "id": row[0],
             "type": row[1],
             "image_path": row[2],
-            "major_colors": row[3].split(","),
-            "minor_colors": row[4].split(",") if row[4] else [],
+            "color": row[3].split(","),
+            "minor_color": row[4].split(",") if row[4] else [],
             "season": row[5].split(","),
-            "favorite": bool(row[6])
+            "fit": row[6]
         }
         for row in items
     ]
@@ -73,7 +75,7 @@ async def upload_clothing(
     majorColors: List[str] = Form(...),
     minorColors: Optional[List[str]] = Form(None),
     season: List[str] = Form(...),
-    isFavorite: str = Form(...)
+    fit: str = Form(...)
 ):
     result = process_and_save_image(file)
     image_path = result["image_path"]
@@ -81,13 +83,13 @@ async def upload_clothing(
     color = ",".join(majorColors)
     minor_color = ",".join(minorColors) if minorColors else ""
     season = ",".join(season)
-    favorite = 1 if isFavorite == "true" else 0
+    fit = fit
 
     conn = sql.connect("clothing.db")
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO clothing (type, image_path, color, season, favorite, minor_color) VALUES (?, ?, ?, ?, ?, ?)",
-        (clothing_type, image_path, color, season, favorite, minor_color)
+        "INSERT INTO clothing (type, image_path, color, minor_color, season, fit) VALUES (?, ?, ?, ?, ?, ?)",
+        (clothing_type, image_path, color, minor_color, season, fit)
     )
     conn.commit()
     clothing_id = cursor.lastrowid
@@ -97,14 +99,14 @@ async def upload_clothing(
         "id": clothing_id,
         "type": clothing_type,
         "image_path": image_path,
-        "color": color,
-        "minor_color": minor_color,
-        "season": season,
-        "favorite": bool(favorite)
+        "color": color.split(",") if color else [],
+        "minor_color": minor_color.split(",") if minor_color else [],
+        "season": season.split(",") if season else [],
+        "fit": fit
     }
 
 
-@app.post("/generate-outfit")
+@app.get("/generate-outfit")
 async def generate_outfit():
     return {"message": "Outfit generation coming soon!"}
 

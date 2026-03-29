@@ -11,7 +11,7 @@ def create_clothing_db():
         color TEXT,
         minor_color TEXT,
         season TEXT,
-        favorite INTEGER
+        fit TEXT
     )
     """)
     conn.commit()

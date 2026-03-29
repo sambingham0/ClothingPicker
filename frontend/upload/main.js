@@ -1,3 +1,15 @@
+// Show selected file name next to the upload button
+const fileInput = document.getElementById('fileInput');
+const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+fileInput.addEventListener('change', function() {
+  if (fileInput.files && fileInput.files.length > 0) {
+    fileNameDisplay.textContent = fileInput.files[0].name;
+  } else {
+    fileNameDisplay.textContent = '';
+  }
+});
+
 const form = document.getElementById('uploadForm');
 
 function showValidationError(message) {
@@ -12,7 +24,9 @@ form.onsubmit = async (e) => {
   const majorColors = document.querySelectorAll('input[name="clothingColor"]');
   const minorColors = document.querySelectorAll('input[name="clothingMinorColor"]');
   const seasons = document.querySelectorAll('input[name="season"]');
-  const favorite = document.querySelector('input[name="isFavorite"]:checked');
+  const fit = document.querySelector('input[name="fit"]:checked');
+  const submitButton = form.querySelector('button[type="submit"]');
+  const originalButtonText = submitButton.textContent;
 
   // Validation checks
   if (!fileInput.files || fileInput.files.length === 0) {
@@ -31,10 +45,14 @@ form.onsubmit = async (e) => {
     showValidationError('Please select at least one season.');
     return;
   }
-  if (!favorite) {
-    showValidationError('Please select if this is a favorite.');
+  if (!fit) {
+    showValidationError('Please select a fit.');
     return;
   }
+
+  // Show loading indication
+  submitButton.disabled = true;
+  submitButton.textContent = 'Processing...';
 
   // Prepare form data
   const formData = new FormData();
@@ -51,7 +69,7 @@ form.onsubmit = async (e) => {
   Array.from(seasons)
     .filter(cb => cb.checked)
     .forEach(cb => formData.append('season', cb.value));
-  formData.append('isFavorite', favorite.value);
+  formData.append('fit', fit.value);
 
   try {
     const response = await fetch('http://192.168.0.111:8000/upload', {
@@ -69,5 +87,9 @@ form.onsubmit = async (e) => {
   } catch (err) {
     console.error('Error during upload:', err);
     alert('Error during upload: ' + err);
+  } finally {
+    // Restore button state
+    submitButton.disabled = false;
+    submitButton.textContent = originalButtonText;
   }
 };
