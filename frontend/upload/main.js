@@ -24,6 +24,7 @@ form.onsubmit = async (e) => {
   const majorColors = document.querySelectorAll('input[name="clothingColor"]');
   const minorColors = document.querySelectorAll('input[name="clothingMinorColor"]');
   const seasons = document.querySelectorAll('input[name="season"]');
+  const occasions = document.querySelectorAll('input[name="occasion"]');
   const fit = document.querySelector('input[name="fit"]:checked');
   const submitButton = form.querySelector('button[type="submit"]');
   const originalButtonText = submitButton.textContent;
@@ -43,6 +44,10 @@ form.onsubmit = async (e) => {
   }
   if (!Array.from(seasons).some(cb => cb.checked)) {
     showValidationError('Please select at least one season.');
+    return;
+  }
+  if (!Array.from(occasions).some(cb => cb.checked)) {
+    showValidationError('Please select at least one occasion.');
     return;
   }
   if (!fit) {
@@ -69,6 +74,10 @@ form.onsubmit = async (e) => {
   Array.from(seasons)
     .filter(cb => cb.checked)
     .forEach(cb => formData.append('season', cb.value));
+  
+  Array.from(occasions)
+    .filter(cb => cb.checked)
+    .forEach(cb => formData.append('occasion', cb.value));
   formData.append('fit', fit.value);
 
   try {

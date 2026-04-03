@@ -1,59 +1,224 @@
 body {
-    font-family: Arial, sans-serif;
+    --panel-width: min(92vw, 460px);
+    font-family: "Segoe UI", Tahoma, sans-serif;
     background: #f7f7fa;
     margin: 0;
     padding: 0;
+    color: #232323;
 }
 
 nav {
     padding: 10px 0;
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
+
 nav a {
     color: black;
     text-decoration: none;
     margin: 0 16px;
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 1.05em;
     padding: 6px 12px;
     border-radius: 4px;
     transition: background 0.2s;
 }
+
 nav a:hover {
     background: lightgray;
 }
 
+.page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 8px 16px 28px;
+}
+
 h1 {
     text-align: center;
-    margin-top: 32px;
-    color: #333;
+    margin: 18px 0 6px;
 }
 
-#clothing-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px auto;
-    max-width: 1200px;
+.subtitle {
+    text-align: center;
+    margin: 0 0 18px;
+    color: #575757;
 }
 
-#clothing-gallery .clothing-card {
+#outfit-stack {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px;
-    margin: 8px;
-    min-width: 220px;
-    max-width: 220px;
+    gap: 18px;
 }
 
-#clothing-gallery .clothing-info {
-    font-size: 0.98em;
-    color: #444;
+.outfit-canvas {
+    position: relative;
+    width: var(--panel-width);
+    aspect-ratio: 3 / 4;
+    background: transparent;
+}
+
+.canvas-toggle-group {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    padding: 0 8px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.canvas-toggle-btn {
+    pointer-events: auto;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: rgba(245, 245, 249, 0.92);
+    box-shadow: 0 2px 8px rgba(35, 35, 45, 0.14);
+}
+
+.canvas-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: transparent;
+    pointer-events: none;
+}
+
+.controls-stack {
+    width: var(--panel-width);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.outfit-section {
+    background: transparent;
+    border: 0;
+    padding: 8px 0 0;
+}
+
+.outfit-section:first-child {
+    padding-top: 0;
+}
+
+.outfit-title {
     text-align: center;
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    line-height: 1.2;
+}
+
+.outfit-controls-row {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+}
+
+.toggle-btn {
+    border: 1px solid #cfcfd8;
+    background: #f5f5f9;
+    color: #333;
+    border-radius: 10px;
+    height: 42px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.item-status {
+    text-align: center;
+    font-weight: 600;
+    color: #45454d;
+}
+
+.outfit-meta {
+    border: 1px solid #d5d5df;
+    background: #fbfbfe;
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 100%;
+    position: relative;
+}
+
+.meta-row {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 8px;
+    align-items: baseline;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.meta-label {
+    color: #5e5e68;
+    font-weight: 600;
+}
+
+.meta-value {
+    color: #25252b;
+    overflow-wrap: anywhere;
+}
+
+.meta-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
     margin: 0;
-    line-height: 1.5;
-    word-break: break-word;
+    border: 1px solid darkred;
+    background: red;
+    color: white;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.meta-delete-btn:hover {
+    background: darkred;
+    transition: background 0.2s;
+}
+
+.toggle-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .controls-stack {
+        gap: 12px;
+    }
+
+    .outfit-section {
+        padding-top: 6px;
+    }
+
+    .outfit-controls-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .toggle-btn {
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .canvas-toggle-group {
+        padding: 0 4px;
+    }
+
+    .meta-row {
+        grid-template-columns: 60px minmax(0, 1fr);
+        font-size: 0.8rem;
+    }
 }

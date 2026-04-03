@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import sqlite3 as sql
+from pathlib import Path
 from db.create_db import create_clothing_db, create_outfits_db
 from image_processing import process_and_save_image
 
@@ -32,7 +33,7 @@ def read_root():
 async def get_clothing():
     conn = sql.connect("clothing.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, type, image_path, color, minor_color, season, fit FROM clothing")
+    cursor.execute("SELECT id, type, image_path, color, minor_color, season, occasion, fit FROM clothing")
     items = cursor.fetchall()
     conn.close()
     return [
@@ -43,7 +44,8 @@ async def get_clothing():
             "color": row[3].split(","),
             "minor_color": row[4].split(",") if row[4] else [],
             "season": row[5].split(","),
-            "fit": row[6]
+            "occasion": row[6].split(","),
+            "fit": row[7]
         }
         for row in items
     ]
@@ -75,6 +77,7 @@ async def upload_clothing(
     majorColors: List[str] = Form(...),
     minorColors: Optional[List[str]] = Form(None),
     season: List[str] = Form(...),
+    occasion: List[str] = Form(...),
     fit: str = Form(...)
 ):
     result = process_and_save_image(file)
@@ -83,13 +86,14 @@ async def upload_clothing(
     color = ",".join(majorColors)
     minor_color = ",".join(minorColors) if minorColors else ""
     season = ",".join(season)
+    occasion = ",".join(occasion)
     fit = fit
 
     conn = sql.connect("clothing.db")
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO clothing (type, image_path, color, minor_color, season, fit) VALUES (?, ?, ?, ?, ?, ?)",
-        (clothing_type, image_path, color, minor_color, season, fit)
+        "INSERT INTO clothing (type, image_path, color, minor_color, season, occasion, fit) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (clothing_type, image_path, color, minor_color, season, occasion, fit)
     )
     conn.commit()
     clothing_id = cursor.lastrowid
@@ -102,7 +106,55 @@ async def upload_clothing(
         "color": color.split(",") if color else [],
         "minor_color": minor_color.split(",") if minor_color else [],
         "season": season.split(",") if season else [],
+        "occasion": occasion.split(",") if occasion else [],
         "fit": fit
+    }
+
+
+@app.delete("/clothing/{clothing_id}")
+async def delete_clothing(clothing_id: int):
+    status = "unknown_error"
+    conn = sql.connect("clothing.db")
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT image_path FROM clothing WHERE id = ?", (clothing_id,))
+        row = cursor.fetchone()
+
+        if not row:
+            status = "not_found"
+        else:
+            image_path = row[0] or ""
+            image_deleted = False
+
+            if image_path:
+                # Keep deletion constrained to the storage directory.
+                image_file = Path("storage") / Path(image_path).name
+                try:
+                    if image_file.exists():
+                        image_file.unlink()
+                        image_deleted = True
+                    else:
+                        status = "image_not_found"
+                except OSError:
+                    status = "image_delete_failed"
+            else:
+                image_deleted = True
+
+            if status == "unknown_error":
+                cursor.execute("DELETE FROM clothing WHERE id = ?", (clothing_id,))
+                conn.commit()
+                if cursor.rowcount == 1 and image_deleted:
+                    status = "success"
+                else:
+                    status = "db_delete_failed"
+    finally:
+        conn.close()
+
+    return {
+        "id": clothing_id,
+        "deleted": status == "success",
+        "status": status
     }
 
 

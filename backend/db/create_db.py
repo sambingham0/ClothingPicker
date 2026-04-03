@@ -11,6 +11,7 @@ def create_clothing_db():
         color TEXT,
         minor_color TEXT,
         season TEXT,
+        occasion TEXT,
         fit TEXT
     )
     """)
