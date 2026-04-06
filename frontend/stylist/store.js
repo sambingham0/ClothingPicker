@@ -5,8 +5,11 @@ export function createState() {
         groupedItems: createSectionRecord(() => []),
         activeIndex: createSectionRecord(() => 0),
         deleting: createSectionRecord(() => false),
+        generatedOutfit: createSectionRecord(() => null),
+        generatedOutfitActive: false,
         sectionElements: {},
-        canvasSlots: {}
+        canvasSlots: {},
+        generateBtn: null
     };
 }
 

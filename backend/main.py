@@ -1,11 +1,12 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import sqlite3 as sql
 from pathlib import Path
-from db.create_db import create_clothing_db, create_outfits_db
+from db.create_db import create_clothing_db
 from image_processing import process_and_save_image
+from outfit_generation import generate_outfit_payload
 
 app = FastAPI()
 app.mount("/images", StaticFiles(directory="storage"), name="images")
@@ -22,7 +23,6 @@ app.add_middleware(
 @app.on_event("startup")
 def startup_event():
     create_clothing_db()
-    create_outfits_db()
 
 @app.get("/")
 def read_root():
@@ -49,25 +49,6 @@ async def get_clothing():
         }
         for row in items
     ]
-
-
-@app.get("/outfits")
-async def get_outfits():
-    conn = sql.connect("outfits.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, name, clothing_ids FROM outfits")
-    items = cursor.fetchall()
-    conn.close()
-    # Convert to list of dicts
-    return [
-        {
-            "id": row[0],
-            "name": row[1],
-            "clothing_ids": row[2]
-        }
-        for row in items
-    ]
-
 
 
 @app.post("/upload")
@@ -160,9 +141,6 @@ async def delete_clothing(clothing_id: int):
 
 @app.get("/generate-outfit")
 async def generate_outfit():
-    return {"message": "Outfit generation coming soon!"}
+    return generate_outfit_payload()
 
 
-@app.post("/save-outfit")
-async def save_outfit():
-    return {"message": "Outfit saving coming soon!"}

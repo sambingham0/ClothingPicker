@@ -1,12 +1,13 @@
 import {
+    API_BASE_URL,
     IMAGE_BASE_URL,
     CLOTHING_API_URL,
     SECTION_IDS,
-    SECTIONS_BY_Z_INDEX,
     METADATA_FIELDS,
     sectionConfig,
     applyLayerAdjustment
 } from './config.js';
+
 import {
     createState,
     getItems,
@@ -44,9 +45,12 @@ function renderMetadata(section, item) {
 function renderSection(sectionId) {
     const section = state.sectionElements[sectionId];
     const slot = state.canvasSlots[sectionId];
-    const item = getCurrentItem(state, sectionId);
     const items = getItems(state, sectionId);
     const isDeleting = state.deleting[sectionId] === true;
+    const generatedValue = state.generatedOutfit[sectionId];
+    const item = state.generatedOutfitActive
+        ? items.find(entry => entry.id === generatedValue) || null
+        : getCurrentItem(state, sectionId);
 
     if (!section) return;
 
@@ -76,7 +80,7 @@ function renderSection(sectionId) {
     } else {
         slot.src = IMAGE_BASE_URL + item.image_path;
         slot.alt = item.type || 'Clothing item';
-        slot.style.display = '';
+        slot.style.display = 'block';
     }
 }
 
@@ -86,7 +90,50 @@ function renderSections() {
     });
 }
 
+function applyOutfitBySection(sectionOutfit) {
+    if (!sectionOutfit || typeof sectionOutfit !== 'object') {
+        alert('No outfit could be generated.');
+        return;
+    }
+
+    SECTION_IDS.forEach(sectionId => {
+        const targetId = sectionOutfit[sectionId];
+        state.generatedOutfit[sectionId] = typeof targetId === 'number' ? targetId : null;
+    });
+    state.generatedOutfitActive = true;
+
+    renderSections();
+}
+
+async function generateOutfitFromServer() {
+    if (state.generateBtn) {
+        state.generateBtn.disabled = true;
+        state.generateBtn.textContent = 'Generating...';
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/generate-outfit`);
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(payload.detail || payload.message || `Request failed (${response.status})`);
+        }
+
+        applyOutfitBySection(payload.sections || {});
+    } catch (error) {
+        console.error('Error generating outfit:', error);
+        alert(`Could not generate outfit: ${error.message || error}`);
+    } finally {
+        if (state.generateBtn) {
+            state.generateBtn.disabled = false;
+            state.generateBtn.textContent = 'Generate Outfit';
+        }
+    }
+}
+
 function rotateSection(sectionId, direction) {
+    state.generatedOutfitActive = false;
+    state.generatedOutfit[sectionId] = null;
     const changed = rotateSectionState(state, sectionId, direction);
     if (!changed) return;
     renderSections();
@@ -129,146 +176,56 @@ async function deleteCurrentItem(sectionId) {
     }
 }
 
-function createToggleButton(symbol, label, onClick) {
-    const button = document.createElement('button');
-    button.className = 'toggle-btn';
-    button.type = 'button';
-    button.textContent = symbol;
-    button.setAttribute('aria-label', label);
-    button.addEventListener('click', onClick);
-    return button;
-}
-
-function createCanvasControls(cfg) {
-    const controls = document.createElement('div');
-    controls.className = 'canvas-toggle-group';
-    controls.style.top = `${cfg.controlY}%`;
-
-    const prevBtn = createToggleButton('‹', `Previous ${cfg.label} item`, () => rotateSection(cfg.id, -1));
-    prevBtn.classList.add('canvas-toggle-btn');
-
-    const nextBtn = createToggleButton('›', `Next ${cfg.label} item`, () => rotateSection(cfg.id, 1));
-    nextBtn.classList.add('canvas-toggle-btn');
-
-    controls.appendChild(prevBtn);
-    controls.appendChild(nextBtn);
-
-    return {
-        root: controls,
-        prevBtn,
-        nextBtn
-    };
-}
-
-function createMetadataPanel(sectionLabel) {
-    const metadata = document.createElement('div');
-    metadata.className = 'outfit-meta';
-    const values = {};
-
-    METADATA_FIELDS.forEach(field => {
-        const row = document.createElement('div');
-        row.className = 'meta-row';
-
-        const label = document.createElement('span');
-        label.className = 'meta-label';
-        label.textContent = `${field.label}:`;
-
-        const value = document.createElement('span');
-        value.className = 'meta-value';
-        value.textContent = '-';
-
-        row.appendChild(label);
-        row.appendChild(value);
-        metadata.appendChild(row);
-
-        values[field.key] = value;
-    });
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'meta-delete-btn';
-    deleteBtn.type = 'button';
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.setAttribute('aria-label', `Delete ${sectionLabel}`);
-    metadata.appendChild(deleteBtn);
-
-    return {
-        root: metadata,
-        values,
-        deleteBtn
-    };
-}
-
-function createSectionControls(cfg, canvasControls) {
-    const sectionRoot = document.createElement('section');
-    sectionRoot.className = 'outfit-section';
-
-    const title = document.createElement('h2');
-    title.className = 'outfit-title';
-    title.textContent = cfg.label;
-
-    const row = document.createElement('div');
-    row.className = 'outfit-controls-row';
-
-    const status = document.createElement('div');
-    status.className = 'item-status';
-    status.textContent = '-/-';
-    const metadata = createMetadataPanel(cfg.label);
-    metadata.deleteBtn.addEventListener('click', () => deleteCurrentItem(cfg.id));
-
-    row.appendChild(status);
-    row.appendChild(metadata.root);
-
-    sectionRoot.appendChild(title);
-    sectionRoot.appendChild(row);
-
-    return {
-        root: sectionRoot,
-        prevBtn: canvasControls ? canvasControls.prevBtn : null,
-        nextBtn: canvasControls ? canvasControls.nextBtn : null,
-        deleteBtn: metadata.deleteBtn,
-        status,
-        metadataValues: metadata.values
-    };
-}
-
 function buildSections() {
-    const root = document.getElementById('outfit-stack');
-    root.innerHTML = '';
     state.sectionElements = {};
     state.canvasSlots = {};
 
-    const canvas = document.createElement('section');
-    canvas.className = 'outfit-canvas';
-    canvas.setAttribute('aria-label', 'Outfit preview');
-    const canvasControlsBySection = {};
+    state.generateBtn = document.getElementById('generate-outfit-btn');
 
-    SECTIONS_BY_Z_INDEX.forEach(cfg => {
-        const layer = document.createElement('img');
-        layer.className = 'canvas-layer';
-        layer.style.zIndex = String(cfg.zIndex);
-        layer.alt = '';
-        layer.style.display = 'none';
-        applyLayerAdjustment(layer, cfg.id);
-        canvas.appendChild(layer);
-        state.canvasSlots[cfg.id] = layer;
-
-        const canvasControls = createCanvasControls(cfg);
-        canvas.appendChild(canvasControls.root);
-        canvasControlsBySection[cfg.id] = canvasControls;
-    });
-
-    const controlsStack = document.createElement('section');
-    controlsStack.className = 'controls-stack';
-
-    root.appendChild(canvas);
-    root.appendChild(controlsStack);
+    if (state.generateBtn) {
+        state.generateBtn.onclick = generateOutfitFromServer;
+    }
 
     sectionConfig.forEach(cfg => {
-        const canvasControls = canvasControlsBySection[cfg.id] || null;
-        const sectionElements = createSectionControls(cfg, canvasControls);
+        const sectionRoot = document.querySelector(`.outfit-section[data-section-id="${cfg.id}"]`);
+        const controlsRoot = document.querySelector(`.canvas-toggle-group[data-section-id="${cfg.id}"]`);
+        const slot = document.querySelector(`.canvas-layer[data-section-id="${cfg.id}"]`);
 
-        controlsStack.appendChild(sectionElements.root);
-        state.sectionElements[cfg.id] = sectionElements;
+        if (controlsRoot) {
+            controlsRoot.style.top = `${cfg.controlY}%`;
+        }
+
+        if (slot) {
+            slot.style.zIndex = String(cfg.zIndex);
+            applyLayerAdjustment(slot, cfg.id);
+            state.canvasSlots[cfg.id] = slot;
+        }
+
+        if (!sectionRoot) return;
+
+        const status = sectionRoot.querySelector('.item-status');
+        const deleteBtn = sectionRoot.querySelector('.meta-delete-btn');
+        const prevBtn = controlsRoot ? controlsRoot.querySelector('[data-action="prev"]') : null;
+        const nextBtn = controlsRoot ? controlsRoot.querySelector('[data-action="next"]') : null;
+        const metadataValues = Object.fromEntries(
+            METADATA_FIELDS.map(field => [
+                field.key,
+                sectionRoot.querySelector(`[data-metadata-key="${field.key}"]`)
+            ])
+        );
+
+        if (prevBtn) prevBtn.onclick = () => rotateSection(cfg.id, -1);
+        if (nextBtn) nextBtn.onclick = () => rotateSection(cfg.id, 1);
+        if (deleteBtn) deleteBtn.onclick = () => deleteCurrentItem(cfg.id);
+
+        state.sectionElements[cfg.id] = {
+            root: sectionRoot,
+            prevBtn,
+            nextBtn,
+            deleteBtn,
+            status,
+            metadataValues
+        };
     });
 }
 

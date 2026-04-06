@@ -1,12 +1,13 @@
-export const IMAGE_BASE_URL = 'http://localhost:8000/images/';
-export const CLOTHING_API_URL = 'http://localhost:8000/clothing';
+export const API_BASE_URL = 'http://localhost:8000';
+export const IMAGE_BASE_URL = `${API_BASE_URL}/images/`;
+export const CLOTHING_API_URL = `${API_BASE_URL}/clothing`;
 
 const DEFAULT_LAYER_ADJUSTMENT = { x: 0, y: 0, scale: 1 };
 
 const LAYER_ADJUSTMENTS = {
-    outer: { x: 0, y: -32, scale: 1 },
+    outer: { x: 0, y: -30, scale: 1 },
     top: { x: 0, y: -5, scale: 1 },
-    bottom: { x: 0, y: 4, scale: 1.5 }
+    bottom: { x: 0, y: 3, scale: 1.5 }
 };
 
 function normalizeType(type) {

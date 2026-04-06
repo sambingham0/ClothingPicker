@@ -17,16 +17,3 @@ def create_clothing_db():
     """)
     conn.commit()
     conn.close()
-
-def create_outfits_db():
-    conn = sqlite3.connect("outfits.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS outfits (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        clothing_ids TEXT
-    )
-    """)
-    conn.commit()
-    conn.close()
