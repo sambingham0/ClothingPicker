@@ -14,10 +14,114 @@ import {
     getCurrentItem,
     rotateSectionState,
     removeCurrentItemFromSection,
-    groupClothesBySection
+    groupClothesBySection,
+    enforceUniqueSelection
 } from './store.js';
 
 const state = createState();
+
+const analysisElements = {
+    score: null,
+    weather: null,
+    reasons: null
+};
+
+function formatWeatherLine(weather) {
+    if (!weather || typeof weather !== 'object') {
+        return 'Weather unavailable; score is based on structure only.';
+    }
+
+    const temperatureC = Number(weather.temperature_c);
+    const legacyTemperature = Number(weather.temperature);
+    const windKph = Number(weather.wind_kph);
+    const windGustKph = Number(weather.wind_gust_kph);
+    const legacyWindMph = Number(weather.wind_speed);
+    const precipitationMm = Number(weather.precipitation_mm);
+    const legacyPrecipitationIn = Number(weather.precipitation);
+
+    const segments = [];
+    if (Number.isFinite(temperatureC)) {
+        const temperatureF = (temperatureC * 9) / 5 + 32;
+        segments.push(`Temp ${temperatureF.toFixed(0)}F`);
+    } else if (Number.isFinite(legacyTemperature)) {
+        segments.push(`Temp ${legacyTemperature.toFixed(0)}F`);
+    }
+
+    if (Number.isFinite(windKph)) {
+        const windMph = windKph * 0.621371;
+        segments.push(`Wind ${windMph.toFixed(0)} mph`);
+    } else if (Number.isFinite(legacyWindMph)) {
+        segments.push(`Wind ${legacyWindMph.toFixed(0)} mph`);
+    }
+
+    if (Number.isFinite(windGustKph) && windGustKph > 0) {
+        const gustMph = windGustKph * 0.621371;
+        segments.push(`Gust ${gustMph.toFixed(0)} mph`);
+    }
+
+    if (Number.isFinite(precipitationMm)) {
+        if (precipitationMm > 0) {
+            segments.push(`Precip ${precipitationMm.toFixed(1)} mm`);
+        } else {
+            segments.push('No measurable precipitation');
+        }
+    } else if (Number.isFinite(legacyPrecipitationIn)) {
+        const rain = Number(weather.rain) || 0;
+        const snow = Number(weather.snowfall) || 0;
+        if (legacyPrecipitationIn > 0 || rain > 0 || snow > 0) {
+            segments.push(
+                `Precip ${legacyPrecipitationIn.toFixed(2)} in (rain ${rain.toFixed(2)}, snow ${snow.toFixed(2)})`
+            );
+        } else {
+            segments.push('No measurable precipitation');
+        }
+    } else {
+        segments.push('No measurable precipitation');
+    }
+
+    if (weather.band) {
+        segments.push(`Band ${String(weather.band)}`);
+    }
+
+    if (weather.source === 'fallback') {
+        segments.push('Using fallback weather');
+    }
+
+    return segments.join(' | ');
+}
+
+function renderAnalysis(payload) {
+    if (!analysisElements.score || !analysisElements.weather || !analysisElements.reasons) return;
+
+    const score = Number(payload && payload.score);
+    analysisElements.score.textContent = Number.isFinite(score)
+        ? `Score: ${score}`
+        : 'Score: unavailable';
+
+    analysisElements.weather.textContent = formatWeatherLine(payload ? payload.weather : null);
+
+    const reasons = Array.isArray(payload && payload.reasons) && payload.reasons.length
+        ? payload.reasons
+        : ['Reasons are not available yet.'];
+
+    analysisElements.reasons.replaceChildren();
+    reasons.forEach(reason => {
+        const li = document.createElement('li');
+        li.textContent = reason;
+        analysisElements.reasons.appendChild(li);
+    });
+}
+
+function resetAnalysisForManualChanges() {
+    if (!analysisElements.score || !analysisElements.weather || !analysisElements.reasons) return;
+    analysisElements.score.textContent = 'Generated score no longer applies after changes.';
+    analysisElements.weather.textContent = 'Generate again to recalculate scoring.';
+    analysisElements.reasons.replaceChildren();
+
+    const li = document.createElement('li');
+    li.textContent = 'Press Generate Outfit to create a fresh recommendation.';
+    analysisElements.reasons.appendChild(li);
+}
 
 function formatMetadataValue(value) {
     if (Array.isArray(value)) {
@@ -99,10 +203,27 @@ function applyOutfitBySection(sectionOutfit) {
     SECTION_IDS.forEach(sectionId => {
         const targetId = sectionOutfit[sectionId];
         state.generatedOutfit[sectionId] = typeof targetId === 'number' ? targetId : null;
+
+        const items = getItems(state, sectionId);
+        const activeIndex = items.findIndex(entry => entry.id === targetId);
+        state.activeIndex[sectionId] = activeIndex >= 0 ? activeIndex : 0;
     });
     state.generatedOutfitActive = true;
 
     renderSections();
+}
+
+function getCurrentSectionsForGeneration() {
+    return Object.fromEntries(
+        SECTION_IDS.map(sectionId => {
+            if (state.generatedOutfitActive && typeof state.generatedOutfit[sectionId] === 'number') {
+                return [sectionId, state.generatedOutfit[sectionId]];
+            }
+
+            const current = getCurrentItem(state, sectionId);
+            return [sectionId, current && typeof current.id === 'number' ? current.id : null];
+        })
+    );
 }
 
 async function generateOutfitFromServer() {
@@ -112,7 +233,17 @@ async function generateOutfitFromServer() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/generate-outfit`);
+        const selected = getCurrentSectionsForGeneration();
+        const query = new URLSearchParams();
+
+        if (typeof selected.outer === 'number') query.set('selected_outer', String(selected.outer));
+        if (typeof selected.top === 'number') query.set('selected_top', String(selected.top));
+        if (typeof selected.bottom === 'number') query.set('selected_bottom', String(selected.bottom));
+
+        const queryString = query.toString();
+        const response = await fetch(
+            `${API_BASE_URL}/generate-outfit${queryString ? `?${queryString}` : ''}`
+        );
         const payload = await response.json().catch(() => ({}));
 
         if (!response.ok) {
@@ -120,6 +251,7 @@ async function generateOutfitFromServer() {
         }
 
         applyOutfitBySection(payload.sections || {});
+        renderAnalysis(payload);
     } catch (error) {
         console.error('Error generating outfit:', error);
         alert(`Could not generate outfit: ${error.message || error}`);
@@ -136,6 +268,7 @@ function rotateSection(sectionId, direction) {
     state.generatedOutfit[sectionId] = null;
     const changed = rotateSectionState(state, sectionId, direction);
     if (!changed) return;
+    resetAnalysisForManualChanges();
     renderSections();
 }
 
@@ -167,6 +300,7 @@ async function deleteCurrentItem(sectionId) {
         }
 
         removeCurrentItemFromSection(state, sectionId);
+        resetAnalysisForManualChanges();
     } catch (error) {
         console.error('Error deleting clothing item:', error);
         alert(`Could not delete item: ${error.message || error}`);
@@ -181,6 +315,9 @@ function buildSections() {
     state.canvasSlots = {};
 
     state.generateBtn = document.getElementById('generate-outfit-btn');
+    analysisElements.score = document.getElementById('analysis-score');
+    analysisElements.weather = document.getElementById('analysis-weather');
+    analysisElements.reasons = document.getElementById('analysis-reasons');
 
     if (state.generateBtn) {
         state.generateBtn.onclick = generateOutfitFromServer;
@@ -233,8 +370,13 @@ async function loadClothingImages() {
     try {
         const clothes = await fetch(CLOTHING_API_URL).then(res => res.json());
         state.groupedItems = groupClothesBySection(clothes);
+        enforceUniqueSelection(state);
         buildSections();
-        renderSections();
+        if (Array.isArray(clothes) && clothes.length > 0) {
+            await generateOutfitFromServer();
+        } else {
+            renderSections();
+        }
     } catch (error) {
         console.error('Error fetching clothing:', error);
         alert('Error fetching clothing: ' + error);

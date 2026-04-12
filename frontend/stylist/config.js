@@ -5,9 +5,9 @@ export const CLOTHING_API_URL = `${API_BASE_URL}/clothing`;
 const DEFAULT_LAYER_ADJUSTMENT = { x: 0, y: 0, scale: 1 };
 
 const LAYER_ADJUSTMENTS = {
-    outer: { x: 0, y: -30, scale: 1 },
+    outer: { x: 0, y: -35, scale: 1 },
     top: { x: 0, y: -5, scale: 1 },
-    bottom: { x: 0, y: 3, scale: 1.5 }
+    bottom: { x: 0, y: 15, scale: 1.3 }
 };
 
 function normalizeType(type) {
@@ -19,7 +19,7 @@ export const sectionConfig = [
     {
         id: 'outer',
         label: 'Top Layer',
-        matchTypes: ['layer', 'top_layer'],
+        matchTypes: ['layer'],
         zIndex: 30,
         controlY: 18
     },
@@ -53,12 +53,19 @@ export const METADATA_FIELDS = [
     { key: 'fit', label: 'Fit' }
 ];
 
-export const SECTION_BY_TYPE = sectionConfig.reduce((acc, section) => {
+export const SECTIONS_BY_TYPE = sectionConfig.reduce((acc, section) => {
     section.matchTypes.forEach(type => {
-        acc[normalizeType(type)] = section.id;
+        const normalizedType = normalizeType(type);
+        if (!acc[normalizedType]) {
+            acc[normalizedType] = [];
+        }
+        acc[normalizedType].push(section.id);
     });
     return acc;
 }, {});
+
+// top_layer can be worn either as a base top or as an outer layer.
+SECTIONS_BY_TYPE.top_layer = ['outer', 'top'];
 
 export function createSectionRecord(createValue) {
     return Object.fromEntries(
@@ -76,6 +83,6 @@ export function applyLayerAdjustment(slot, sectionId) {
     slot.style.transformOrigin = 'center top';
 }
 
-export function mapTypeToSectionId(type) {
-    return SECTION_BY_TYPE[normalizeType(type)] || null;
+export function mapTypeToSectionIds(type) {
+    return SECTIONS_BY_TYPE[normalizeType(type)] || [];
 }

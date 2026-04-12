@@ -25,6 +25,20 @@
             <label><input type="radio" name="clothingType" value="top_layer"> Top or Layer</label>
         </fieldset>
 
+        <fieldset id="sleeveLengthFieldset" class="conditional-fieldset" hidden>
+            <legend>Sleeve Length</legend>
+            <p class="helper-text">Required for tops and layers.</p>
+            <label><input type="radio" name="sleeveLength" value="short_sleeve"> Short Sleeve</label>
+            <label><input type="radio" name="sleeveLength" value="long_sleeve"> Long Sleeve</label>
+        </fieldset>
+
+        <fieldset id="bottomStyleFieldset" class="conditional-fieldset" hidden>
+            <legend>Bottom Style</legend>
+            <p class="helper-text">Required for bottoms.</p>
+            <label><input type="radio" name="bottomStyle" value="shorts"> Shorts</label>
+            <label><input type="radio" name="bottomStyle" value="pants"> Pants</label>
+        </fieldset>
+
         <fieldset>
             <legend>Clothing Major Color(s)</legend>
                 <label><input type="checkbox" name="clothingColor" value="black"> Black</label>

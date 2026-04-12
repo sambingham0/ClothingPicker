@@ -33,7 +33,9 @@ def read_root():
 async def get_clothing():
     conn = sql.connect("clothing.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, type, image_path, color, minor_color, season, occasion, fit FROM clothing")
+    cursor.execute(
+        "SELECT id, type, image_path, color, minor_color, season, occasion, fit, sleeve_length, bottom_style FROM clothing"
+    )
     items = cursor.fetchall()
     conn.close()
     return [
@@ -45,7 +47,9 @@ async def get_clothing():
             "minor_color": row[4].split(",") if row[4] else [],
             "season": row[5].split(","),
             "occasion": row[6].split(","),
-            "fit": row[7]
+            "fit": row[7],
+            "sleeve_length": row[8],
+            "bottom_style": row[9]
         }
         for row in items
     ]
@@ -59,11 +63,41 @@ async def upload_clothing(
     minorColors: Optional[List[str]] = Form(None),
     season: List[str] = Form(...),
     occasion: List[str] = Form(...),
-    fit: str = Form(...)
+    fit: str = Form(...),
+    sleeveLength: Optional[str] = Form(None),
+    bottomStyle: Optional[str] = Form(None)
 ):
+    clothing_type = (type or "").strip().lower()
+
+    valid_types = {"top", "bottom", "layer", "top_layer"}
+    if clothing_type not in valid_types:
+        raise HTTPException(status_code=400, detail="Invalid clothing type.")
+
+    needs_sleeve_length = clothing_type in {"top", "layer", "top_layer"}
+    valid_sleeve_lengths = {"short_sleeve", "long_sleeve"}
+    if needs_sleeve_length:
+        if sleeveLength not in valid_sleeve_lengths:
+            raise HTTPException(
+                status_code=400,
+                detail="Sleeve length must be short_sleeve or long_sleeve for tops/layers."
+            )
+    else:
+        sleeveLength = None
+
+    needs_bottom_style = clothing_type == "bottom"
+    valid_bottom_styles = {"shorts", "pants"}
+    if needs_bottom_style:
+        if bottomStyle not in valid_bottom_styles:
+            raise HTTPException(
+                status_code=400,
+                detail="Bottom style must be shorts or pants for bottoms."
+            )
+    else:
+        bottomStyle = None
+
     result = process_and_save_image(file)
     image_path = result["image_path"]
-    clothing_type = type
+
     color = ",".join(majorColors)
     minor_color = ",".join(minorColors) if minorColors else ""
     season = ",".join(season)
@@ -73,8 +107,11 @@ async def upload_clothing(
     conn = sql.connect("clothing.db")
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO clothing (type, image_path, color, minor_color, season, occasion, fit) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (clothing_type, image_path, color, minor_color, season, occasion, fit)
+        """
+        INSERT INTO clothing (type, image_path, color, minor_color, season, occasion, fit, sleeve_length, bottom_style)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (clothing_type, image_path, color, minor_color, season, occasion, fit, sleeveLength, bottomStyle)
     )
     conn.commit()
     clothing_id = cursor.lastrowid
@@ -88,7 +125,9 @@ async def upload_clothing(
         "minor_color": minor_color.split(",") if minor_color else [],
         "season": season.split(",") if season else [],
         "occasion": occasion.split(",") if occasion else [],
-        "fit": fit
+        "fit": fit,
+        "sleeve_length": sleeveLength,
+        "bottom_style": bottomStyle
     }
 
 
@@ -140,7 +179,24 @@ async def delete_clothing(clothing_id: int):
 
 
 @app.get("/generate-outfit")
-async def generate_outfit():
-    return generate_outfit_payload()
+async def generate_outfit(
+    selected_outer: Optional[int] = None,
+    selected_top: Optional[int] = None,
+    selected_bottom: Optional[int] = None,
+    top_n: int = 3,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+):
+    selected_sections = {
+        "outer": selected_outer,
+        "top": selected_top,
+        "bottom": selected_bottom
+    }
+    return generate_outfit_payload(
+        selected_sections=selected_sections,
+        top_n=top_n,
+        latitude=latitude,
+        longitude=longitude,
+    )
 
 

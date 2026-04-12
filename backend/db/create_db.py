@@ -12,8 +12,11 @@ def create_clothing_db():
         minor_color TEXT,
         season TEXT,
         occasion TEXT,
-        fit TEXT
+        fit TEXT,
+        sleeve_length TEXT,
+        bottom_style TEXT
     )
     """)
+    
     conn.commit()
     conn.close()

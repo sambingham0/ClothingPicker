@@ -1,6 +1,48 @@
 // Show selected file name next to the upload button
 const fileInput = document.getElementById('fileInput');
 const fileNameDisplay = document.getElementById('fileNameDisplay');
+const clothingTypeInputs = document.querySelectorAll('input[name="clothingType"]');
+const sleeveLengthFieldset = document.getElementById('sleeveLengthFieldset');
+const bottomStyleFieldset = document.getElementById('bottomStyleFieldset');
+
+function typeNeedsSleeveOption(type) {
+  return type === 'top' || type === 'layer' || type === 'top_layer';
+}
+
+function typeNeedsBottomStyle(type) {
+  return type === 'bottom';
+}
+
+function clearRadioGroup(name) {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(input => {
+    input.checked = false;
+  });
+}
+
+function updateConditionalAttributeFields() {
+  const selectedType = document.querySelector('input[name="clothingType"]:checked');
+  const selectedTypeValue = selectedType ? selectedType.value : null;
+
+  const showSleeveOptions = typeNeedsSleeveOption(selectedTypeValue);
+  const showBottomStyleOptions = typeNeedsBottomStyle(selectedTypeValue);
+
+  sleeveLengthFieldset.hidden = !showSleeveOptions;
+  bottomStyleFieldset.hidden = !showBottomStyleOptions;
+
+  if (!showSleeveOptions) {
+    clearRadioGroup('sleeveLength');
+  }
+
+  if (!showBottomStyleOptions) {
+    clearRadioGroup('bottomStyle');
+  }
+}
+
+clothingTypeInputs.forEach(input => {
+  input.addEventListener('change', updateConditionalAttributeFields);
+});
+
+updateConditionalAttributeFields();
 
 fileInput.addEventListener('change', function() {
   if (fileInput.files && fileInput.files.length > 0) {
@@ -26,8 +68,11 @@ form.onsubmit = async (e) => {
   const seasons = document.querySelectorAll('input[name="season"]');
   const occasions = document.querySelectorAll('input[name="occasion"]');
   const fit = document.querySelector('input[name="fit"]:checked');
+  const sleeveLength = document.querySelector('input[name="sleeveLength"]:checked');
+  const bottomStyle = document.querySelector('input[name="bottomStyle"]:checked');
   const submitButton = form.querySelector('button[type="submit"]');
   const originalButtonText = submitButton.textContent;
+  const typeValue = type ? type.value : null;
 
   // Validation checks
   if (!fileInput.files || fileInput.files.length === 0) {
@@ -52,6 +97,14 @@ form.onsubmit = async (e) => {
   }
   if (!fit) {
     showValidationError('Please select a fit.');
+    return;
+  }
+  if (typeNeedsSleeveOption(typeValue) && !sleeveLength) {
+    showValidationError('Please select short sleeve or long sleeve for tops/layers.');
+    return;
+  }
+  if (typeNeedsBottomStyle(typeValue) && !bottomStyle) {
+    showValidationError('Please select shorts or pants for bottoms.');
     return;
   }
 
@@ -79,6 +132,12 @@ form.onsubmit = async (e) => {
     .filter(cb => cb.checked)
     .forEach(cb => formData.append('occasion', cb.value));
   formData.append('fit', fit.value);
+  if (sleeveLength) {
+    formData.append('sleeveLength', sleeveLength.value);
+  }
+  if (bottomStyle) {
+    formData.append('bottomStyle', bottomStyle.value);
+  }
 
   try {
     const response = await fetch('http://192.168.0.111:8000/upload', {

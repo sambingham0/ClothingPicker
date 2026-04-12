@@ -124,6 +124,28 @@ h1 {
     gap: 14px;
 }
 
+.analysis-section {
+    width: var(--panel-width);
+    margin: 6px auto 0;
+}
+
+.analysis-score {
+    font-weight: 700;
+    color: #1f2d4a;
+}
+
+.analysis-reasons-row {
+    align-items: start;
+}
+
+.analysis-reasons {
+    margin: 0;
+    padding-left: 18px;
+    color: #25252b;
+    display: grid;
+    gap: 4px;
+}
+
 .outfit-section {
     background: transparent;
     border: 0;
