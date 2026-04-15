@@ -167,7 +167,7 @@ h1 {
 .outfit-controls-row {
     display: grid;
     grid-template-columns: 56px minmax(0, 1fr);
-    align-items: start;
+    align-items: stretch;
     gap: 10px;
 }
 
@@ -195,7 +195,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-height: 100%;
+    min-height: 0;
     position: relative;
 }
 
@@ -272,8 +272,33 @@ h1 {
         padding: 0 4px;
     }
 
+    .controls-stack .outfit-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 24px 10px 10px;
+    }
+
     .meta-row {
-        grid-template-columns: 60px minmax(0, 1fr);
-        font-size: 0.8rem;
+        grid-template-columns: 56px minmax(0, 1fr);
+        font-size: 0.79rem;
+        line-height: 1.2;
+    }
+
+    .meta-label,
+    .meta-value {
+        line-height: 1.2;
+    }
+
+    .meta-value {
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
+
+    .meta-delete-btn {
+        top: 6px;
+        right: 6px;
+        padding: 3px 8px;
+        font-size: 0.7rem;
     }
 }

@@ -8,6 +8,7 @@
 -   **Image Processing:** Automatic background removal and cropping for clean, uniform clothing images.
 -   **Outfit Recommendations:** Suggests outfits using matching logic, considering weather and user preferences.
 -   **Modern Web UI:** Simple, responsive frontend for browsing and managing your wardrobe.
+-   **Assistant Dashboard:** Live view of the voice assistant state, recent logs, and service activity.
 -   **Self-Hosted:** Runs on a home server for privacy and full control.
 
 ## Tech Stack
@@ -15,6 +16,7 @@
 -   **Backend:** Python (FastAPI), SQLite, OpenCV, Pillow, rembg
 -   **Frontend:** HTML, CSS, JavaScript
 -   **Image Storage:** Local server storage
+
 
 ## Future Improvements
 

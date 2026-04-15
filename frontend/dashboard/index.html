@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woodhouse</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-shell">
+        <nav>
+            <a href="../stylist/index.html">Stylist</a>
+            <a href="../upload/index.html">Upload</a>
+            <a href="../dashboard/index.html">Dashboard</a>
+        </nav>
+
+        <main class="page">
+            <section class="hero">
+                <div>
+                    <h1>Woodhouse</h1>
+                    <div class="subtitle-row">
+                        <p class="subtitle">
+                            Eggs Woodhouse.
+                        </p>
+                        <span id="health-pill" class="pill pill-neutral">Loading</span>
+                    </div>
+                    <span id="refresh-meta" class="refresh-meta">Last refresh: never</span>
+                </div>
+            </section>
+
+            <section class="grid">
+                <article class="card card-weather">
+                    <div class="card-header card-header-tight">
+                        <h2>Weather</h2>
+                        <p id="weather-updated" class="widget-timestamp">-</p>
+                    </div>
+                    <p id="weather-summary" class="section-meta section-meta-tight">Loading weather…</p>
+                    <div class="weather-mini-grid">
+                        <div class="weather-mini-cell">
+                            <span>Temp</span>
+                            <strong id="weather-temp">-</strong>
+                        </div>
+                        <div class="weather-mini-cell">
+                            <span>Wind</span>
+                            <strong id="weather-wind">-</strong>
+                        </div>
+                        <div class="weather-mini-cell">
+                            <span>Precip</span>
+                            <strong id="weather-precip">-</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card card-primary card-spotify">
+                    <div class="card-header card-header-tight">
+                        <h2>Spotify</h2>
+                        <p id="spotify-updated" class="widget-timestamp">-</p>
+                    </div>
+                    <p id="spotify-summary" class="section-meta section-meta-tight">Loading Spotify…</p>
+                    <div id="spotify-embed-wrap" class="spotify-embed-wrap">
+                        <iframe
+                            id="spotify-embed"
+                            title="Spotify player"
+                            src=""
+                            loading="lazy"
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            tabindex="-1"
+                            hidden
+                        ></iframe>
+                        <div class="spotify-embed-shield" aria-hidden="true"></div>
+                    </div>
+                    <div class="spotify-controls">
+                        <div class="spotify-controls-row">
+                            <button id="spotify-prev-btn" class="spotify-control-btn" type="button">Previous</button>
+                            <button id="spotify-toggle-btn" class="spotify-control-btn" type="button">Play</button>
+                            <button id="spotify-next-btn" class="spotify-control-btn" type="button">Next</button>
+                            <button id="spotify-vol-down-btn" class="spotify-control-btn" type="button">Vol -</button>
+                            <button id="spotify-transfer-btn" class="spotify-control-btn" type="button">Transfer</button>
+                            <button id="spotify-vol-up-btn" class="spotify-control-btn" type="button">Vol +</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card card-primary">
+                    <div class="card-header">
+                        <h2>Runtime</h2>
+                        <button id="refresh-btn" type="button">Refresh</button>
+                    </div>
+                    <dl class="kv-grid">
+                        <div>
+                            <dt>Status</dt>
+                            <dd id="runtime-status">-</dd>
+                        </div>
+                        <div>
+                            <dt>Query mode</dt>
+                            <dd id="runtime-query">-</dd>
+                        </div>
+                        <div>
+                            <dt>Listening</dt>
+                            <dd id="runtime-listening">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last heard</dt>
+                            <dd id="runtime-heard">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last heard at</dt>
+                            <dd id="runtime-heard-at">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last command</dt>
+                            <dd id="runtime-command">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last command at</dt>
+                            <dd id="runtime-command-at">-</dd>
+                        </div>
+                        <div>
+                            <dt>Handled by</dt>
+                            <dd id="runtime-plugin">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last notice</dt>
+                            <dd id="runtime-notice">-</dd>
+                        </div>
+                    </dl>
+                </article>
+
+                <article class="card">
+                    <h2>Assistant Activity</h2>
+                    <p id="activity-summary" class="section-meta">Loading activity…</p>
+                    <ul id="activity-list" class="activity-list"></ul>
+                </article>
+
+                <article class="card card-wide">
+                    <h2>Recent Logs</h2>
+                    <p id="logs-summary" class="section-meta">Loading logs…</p>
+                    <div id="log-feed" class="log-feed" aria-live="polite"></div>
+                </article>
+            </section>
+        </main>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

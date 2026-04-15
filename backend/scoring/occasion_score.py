@@ -1,16 +1,4 @@
-def _normalize_token(value):
-	return (value or "").strip().lower()
-
-def _list_tokens(value):
-	if value is None:
-		return []
-	if isinstance(value, list):
-		values = value
-	elif isinstance(value, str):
-		values = value.split(",")
-	else:
-		values = []
-	return [_normalize_token(part) for part in values if _normalize_token(part)]
+from scoring.utils import list_tokens
 
 def score_occasion(outfit_sections):
 	top = (outfit_sections or {}).get("top")
@@ -19,8 +7,8 @@ def score_occasion(outfit_sections):
 	if not top or not bottom:
 		return 0, []
 
-	top_occasions = set(_list_tokens((top or {}).get("occasion")))
-	bottom_occasions = set(_list_tokens((bottom or {}).get("occasion")))
+	top_occasions = set(list_tokens((top or {}).get("occasion")))
+	bottom_occasions = set(list_tokens((bottom or {}).get("occasion")))
 
 	if not top_occasions or not bottom_occasions:
 		return 0, ["Occasion match skipped: mission data."]

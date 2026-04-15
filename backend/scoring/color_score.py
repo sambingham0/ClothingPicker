@@ -1,4 +1,4 @@
-from typing import List, Set
+from scoring.utils import list_tokens
 
 NEUTRAL_COLORS = {"black", "white", "gray", "grey", "navy", "beige", "tan"}
 COLOR_FAMILIES = {
@@ -26,30 +26,19 @@ CLASH_COLOR_PAIRS = {
 	frozenset({"purple", "orange"}),
 }
 
-def _normalize_token(value):
-	return (value or "").strip().lower()
-
-def _list_tokens(value):
-	if value is None:
-		return []
-	if isinstance(value, list):
-		values = value
-	elif isinstance(value, str):
-		values = value.split(",")
-	else:
-		values = []
-	return [_normalize_token(part) for part in values if _normalize_token(part)]
 
 def _get_primary_color(item):
-	colors = _list_tokens((item or {}).get("major_colors"))
+	colors = list_tokens((item or {}).get("major_colors"))
 	if colors:
 		return colors[0]
-	minor_colors = _list_tokens((item or {}).get("minor_colors"))
+
+	minor_colors = list_tokens((item or {}).get("minor_colors"))
 	return minor_colors[0] if minor_colors else None
+
 
 def _get_all_colors(item):
 	item = item or {}
-	all_colors = _list_tokens(item.get("major_colors")) + _list_tokens(item.get("minor_colors"))
+	all_colors = list_tokens(item.get("major_colors")) + list_tokens(item.get("minor_colors"))
 	unique = []
 	seen = set()
 	for color in all_colors:
@@ -58,6 +47,7 @@ def _get_all_colors(item):
 		seen.add(color)
 		unique.append(color)
 	return unique
+
 
 def _is_neutral(color):
 	return color in NEUTRAL_COLORS
@@ -153,6 +143,6 @@ def score_colors(outfit_sections):
 		family = next(iter(primary_families))
 		if family != "neutral":
 			score -= 3
-			reasons.append("(-3 pts) The outfit stays in one strong color family across all pieces.")
+		reasons.append("(-3 pts) The outfit stays in one strong color family across all pieces.")
 
 	return score, reasons

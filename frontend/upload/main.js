@@ -140,7 +140,7 @@ form.onsubmit = async (e) => {
   }
 
   try {
-    const response = await fetch('http://192.168.0.111:8000/upload', {
+    const response = await fetch('/upload', {
       method: 'POST',
       body: formData
     });

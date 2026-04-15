@@ -1,13 +1,13 @@
-export const API_BASE_URL = 'http://localhost:8000';
-export const IMAGE_BASE_URL = `${API_BASE_URL}/images/`;
-export const CLOTHING_API_URL = `${API_BASE_URL}/clothing`;
+export const API_BASE_URL = '';
+export const IMAGE_BASE_URL = '/images/';
+export const CLOTHING_API_URL = '/clothing';
 
 const DEFAULT_LAYER_ADJUSTMENT = { x: 0, y: 0, scale: 1 };
 
 const LAYER_ADJUSTMENTS = {
-    outer: { x: 0, y: -35, scale: 1 },
-    top: { x: 0, y: -5, scale: 1 },
-    bottom: { x: 0, y: 15, scale: 1.3 }
+    outer: { x: 0, y: -5, scale: .4 },
+    top: { x: 0, y: 23, scale: .4 },
+    bottom: { x: 1, y: 49, scale: .6 }
 };
 
 function normalizeType(type) {
@@ -40,10 +40,6 @@ export const sectionConfig = [
 ];
 
 export const SECTION_IDS = sectionConfig.map(section => section.id);
-
-export const SECTIONS_BY_Z_INDEX = sectionConfig
-    .slice()
-    .sort((a, b) => a.zIndex - b.zIndex);
 
 export const METADATA_FIELDS = [
     { key: 'color', label: 'Color' },

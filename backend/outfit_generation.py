@@ -1,14 +1,10 @@
 import random
 import sqlite3 as sql
 
+from app_config import CLOTHING_DB_PATH
 from scoring.outfit_score import explain_outfit_score, score_outfit
+from scoring.utils import split_csv_field
 from scoring.weather_score import fetch_current_weather, get_layering_guidance
-
-
-def split_csv_field(value):
-    if not value:
-        return []
-    return [part.strip().lower() for part in value.split(",") if part.strip()]
 
 
 def generate_candidate_outfit(grouped, weather):
@@ -90,7 +86,7 @@ def generate_outfit_payload(
     except (TypeError, ValueError):
         top_outfit_count = 3
 
-    conn = sql.connect("clothing.db")
+    conn = sql.connect(str(CLOTHING_DB_PATH))
     try:
         cursor = conn.cursor()
         cursor.execute(

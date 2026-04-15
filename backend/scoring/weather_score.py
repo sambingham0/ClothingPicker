@@ -4,6 +4,8 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
+from scoring.utils import to_float
+
 RAINY_WEATHER_CODES = {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99}
 DEFAULT_LATITUDE = 43.816355
 DEFAULT_LONGITUDE = -111.798766
@@ -13,21 +15,14 @@ CACHE_EXPIRATION_SECONDS = 300  # 5 minutes
 _weather_cache = {}  # Keys will be (lat, lon)
 
 
-def _to_float(value):
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
 def _wind_intensity_kph(weather):
-    wind_kph = _to_float((weather or {}).get("wind_kph")) or 0.0
-    gust_kph = _to_float((weather or {}).get("wind_gust_kph")) or 0.0
+    wind_kph = to_float((weather or {}).get("wind_kph")) or 0.0
+    gust_kph = to_float((weather or {}).get("wind_gust_kph")) or 0.0
     return max(wind_kph, gust_kph)
 
 
 def resolve_weather_band(weather):
-    temperature_c = _to_float((weather or {}).get("temperature_c"))
+    temperature_c = to_float((weather or {}).get("temperature_c"))
     if temperature_c is None:
         return "mild"
     if temperature_c < 0:
@@ -42,8 +37,8 @@ def resolve_weather_band(weather):
 
 
 def fetch_current_weather(latitude=None, longitude=None):
-    lat = _to_float(latitude)
-    lon = _to_float(longitude)
+    lat = to_float(latitude)
+    lon = to_float(longitude)
     if lat is None:
         lat = DEFAULT_LATITUDE
     if lon is None:
@@ -73,18 +68,18 @@ def fetch_current_weather(latitude=None, longitude=None):
 
         current = payload.get("current", {})
         weather_code = int(current.get("weather_code", -1))
-        precipitation_mm = _to_float(current.get("precipitation")) or 0.0
-        wind_kph = _to_float(current.get("wind_speed_10m")) or 0.0
-        wind_gust_kph = _to_float(current.get("wind_gusts_10m")) or 0.0
+        precipitation_mm = to_float(current.get("precipitation")) or 0.0
+        wind_kph = to_float(current.get("wind_speed_10m")) or 0.0
+        wind_gust_kph = to_float(current.get("wind_gusts_10m")) or 0.0
 
         weather = {
-            "temperature_c": _to_float(current.get("temperature_2m")),
+            "temperature_c": to_float(current.get("temperature_2m")),
             "precipitation_mm": precipitation_mm,
             "wind_kph": wind_kph,
             "wind_gust_kph": wind_gust_kph,
             "weather_code": weather_code,
             "is_rainy": weather_code in RAINY_WEATHER_CODES or precipitation_mm > 0.1,
-            "is_windy": _wind_intensity_kph(current) >= 16,  # ~10mph
+            "is_windy": max(wind_kph, wind_gust_kph) >= 16,
             "source": "open-meteo",
         }
         weather["band"] = resolve_weather_band(weather)
@@ -110,7 +105,7 @@ def fetch_current_weather(latitude=None, longitude=None):
 def get_layering_guidance(weather):
     band = resolve_weather_band(weather)
     is_rainy = bool((weather or {}).get("is_rainy"))
-    is_windy = _wind_intensity_kph(weather) >= 16
+    is_windy = _wind_intensity_kph(weather) >= 15
 
     outer_probability_by_band = {
         "hot": 0.05,
