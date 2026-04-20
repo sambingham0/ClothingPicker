@@ -12,7 +12,7 @@ SPOTIFY_VOLUME_STEP_PERCENT = 5
 
 
 TRANSPORT_ACTIONS = {"play", "pause", "next", "previous"}
-VOLUME_ACTIONS = {"volume_up", "volume_down"}
+VOLUME_ACTIONS = {"volume_up", "volume_down", "volume_set"}
 SHUFFLE_ACTIONS = {"shuffle_on", "shuffle_off"}
 TRANSFER_ACTIONS = {"transfer_here"}
 SUPPORTED_ACTIONS = TRANSPORT_ACTIONS | VOLUME_ACTIONS | SHUFFLE_ACTIONS | TRANSFER_ACTIONS
@@ -48,7 +48,13 @@ def _get_active_spotify_volume_percent() -> tuple[Optional[int], Optional[str]]:
     return _clamp_spotify_volume_percent(int(volume_percent)), None
 
 
-def _resolve_spotify_volume_target(action: str) -> tuple[Optional[int], Optional[str]]:
+def _resolve_spotify_volume_target(action: str, target_volume: Optional[int] = None) -> tuple[Optional[int], Optional[str]]:
+    if action == "volume_set":
+        if target_volume is None:
+            return None, "A Spotify volume target is required."
+
+        return _clamp_spotify_volume_percent(target_volume), None
+
     current_volume, error_message = _get_active_spotify_volume_percent()
     if current_volume is None:
         return None, error_message or "Current Spotify volume is unavailable."
@@ -67,7 +73,7 @@ def _spotify_control_error_status(status_code: int) -> int:
     return 400
 
 
-def execute_spotify_control_action(raw_action: str) -> tuple[dict[str, object], int]:
+def execute_spotify_control_action(raw_action: str, volume_percent: Optional[int] = None) -> tuple[dict[str, object], int]:
     action = raw_action.strip().lower() if isinstance(raw_action, str) else ""
 
     if action not in SUPPORTED_ACTIONS:
@@ -109,7 +115,7 @@ def execute_spotify_control_action(raw_action: str) -> tuple[dict[str, object], 
             method, url = route
             status_code, _, error_message = spotify_api_request(method, url)
         elif action in VOLUME_ACTIONS:
-            target_volume, volume_error = _resolve_spotify_volume_target(action)
+            target_volume, volume_error = _resolve_spotify_volume_target(action, volume_percent)
             if target_volume is None:
                 return {
                     "requestedAtUtc": utc_now_iso(),
@@ -139,6 +145,7 @@ def execute_spotify_control_action(raw_action: str) -> tuple[dict[str, object], 
             "previous": "Went to previous track.",
             "volume_up": f"Volume increased to {target_volume}%.",
             "volume_down": f"Volume decreased to {target_volume}%.",
+            "volume_set": f"Volume set to {target_volume}%.",
             "shuffle_on": "Shuffle enabled.",
             "shuffle_off": "Shuffle disabled.",
             "transfer_here": "Playback transferred to this Mac.",

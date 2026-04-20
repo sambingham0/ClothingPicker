@@ -1,3 +1,4 @@
+import math
 import random
 import sqlite3 as sql
 
@@ -7,10 +8,12 @@ from scoring.utils import split_csv_field
 from scoring.weather_score import fetch_current_weather, get_layering_guidance
 
 
-def generate_candidate_outfit(grouped, weather):
+OUTFIT_SECTION_IDS = ("outer", "top", "bottom")
+
+
+def generate_candidate_outfit(grouped, layering_guidance):
     sections = {"outer": None, "top": None, "bottom": None}
     used_ids = set()
-    layering_guidance = get_layering_guidance(weather)
 
     outer_available = [item for item in grouped["outer"] if item["id"] not in used_ids]
     should_include_outer = random.random() < layering_guidance["outer_probability"]
@@ -54,6 +57,123 @@ def serialize_sections(outfit_sections):
         section_id: (item["id"] if item else None)
         for section_id, item in outfit_sections.items()
     }
+
+
+def section_item_id(outfit_sections, section_id):
+    item = (outfit_sections or {}).get(section_id)
+    if not item:
+        return None
+    return item.get("id")
+
+
+def candidate_signature(outfit_sections):
+    return tuple(section_item_id(outfit_sections, section_id) for section_id in OUTFIT_SECTION_IDS)
+
+
+def dedupe_ranked_candidates(ranked_candidates):
+    unique_candidates = []
+    seen_signatures = set()
+
+    for candidate_score, candidate_sections in ranked_candidates:
+        signature = candidate_signature(candidate_sections)
+        if signature in seen_signatures:
+            continue
+
+        seen_signatures.add(signature)
+        unique_candidates.append((candidate_score, candidate_sections))
+
+    return unique_candidates
+
+
+def preferred_item_reuse_cap(top_outfit_count):
+    # Base cap targets visible diversity for first-screen outfit options.
+    diversity_window = min(top_outfit_count, 8)
+    return max(1, min(3, int(diversity_window * 0.4)))
+
+
+def calculate_section_item_caps(ranked_candidates, top_outfit_count):
+    if top_outfit_count <= 0:
+        return {section_id: 1 for section_id in OUTFIT_SECTION_IDS}
+
+    diversity_window = min(top_outfit_count, 8)
+    preferred_cap = preferred_item_reuse_cap(top_outfit_count)
+    unique_items_by_section = {section_id: set() for section_id in OUTFIT_SECTION_IDS}
+
+    for _, candidate_sections in ranked_candidates:
+        for section_id in OUTFIT_SECTION_IDS:
+            item_id = section_item_id(candidate_sections, section_id)
+            if item_id is not None:
+                unique_items_by_section[section_id].add(item_id)
+
+    section_caps = {}
+    for section_id, unique_ids in unique_items_by_section.items():
+        unique_count = len(unique_ids)
+        if unique_count == 0:
+            section_caps[section_id] = diversity_window
+            continue
+
+        minimum_cap_needed = max(1, math.ceil(diversity_window / unique_count))
+        section_caps[section_id] = max(preferred_cap, minimum_cap_needed)
+
+    return section_caps
+
+
+def candidate_within_item_cap(candidate_sections, item_usage_by_section, section_caps, cap_relaxation):
+    for section_id in OUTFIT_SECTION_IDS:
+        item_id = section_item_id(candidate_sections, section_id)
+        if item_id is None:
+            continue
+
+        section_cap = section_caps.get(section_id, 1)
+        effective_cap = section_cap + cap_relaxation
+        if item_usage_by_section[section_id].get(item_id, 0) >= effective_cap:
+            return False
+
+    return True
+
+
+def increment_item_usage(candidate_sections, item_usage_by_section):
+    for section_id in OUTFIT_SECTION_IDS:
+        item_id = section_item_id(candidate_sections, section_id)
+        if item_id is None:
+            continue
+
+        item_usage_by_section[section_id][item_id] = item_usage_by_section[section_id].get(item_id, 0) + 1
+
+
+def select_diverse_top_candidates(ranked_candidates, top_outfit_count):
+    if top_outfit_count <= 0:
+        return []
+
+    selected_candidates = []
+    remaining_candidates = list(ranked_candidates)
+    item_usage_by_section = {section_id: {} for section_id in OUTFIT_SECTION_IDS}
+    section_caps = calculate_section_item_caps(ranked_candidates, top_outfit_count)
+
+    while remaining_candidates and len(selected_candidates) < top_outfit_count:
+        chosen_index = None
+        cap_relaxation = 0
+
+        while cap_relaxation <= top_outfit_count and chosen_index is None:
+            for index, (_, candidate_sections) in enumerate(remaining_candidates):
+                if candidate_within_item_cap(
+                    candidate_sections,
+                    item_usage_by_section,
+                    section_caps,
+                    cap_relaxation,
+                ):
+                    chosen_index = index
+                    break
+            cap_relaxation += 1
+
+        if chosen_index is None:
+            chosen_index = 0
+
+        chosen_candidate = remaining_candidates.pop(chosen_index)
+        selected_candidates.append(chosen_candidate)
+        increment_item_usage(chosen_candidate[1], item_usage_by_section)
+
+    return selected_candidates
 
 
 def normalize_selected_sections(selected_sections):
@@ -136,25 +256,37 @@ def generate_outfit_payload(
         for section_id in section_ids:
             grouped[section_id].append(item)
 
-    weather = fetch_current_weather(latitude=latitude, longitude=longitude)
-
     if not any(grouped.values()):
         return {
             "name": "Generated Outfit",
             "sections": {"outer": None, "top": None, "bottom": None},
             "score": 0,
-            "weather": weather,
+            "weather": {"source": "not-requested", "band": "mild"},
             "reasons": ["No clothing items are available to build an outfit."]
         }
+
+    weather = fetch_current_weather(latitude=latitude, longitude=longitude)
+    layering_guidance = get_layering_guidance(weather)
 
     candidates = []
 
     for _ in range(candidate_total):
-        candidate_sections = generate_candidate_outfit(grouped, weather)
+        candidate_sections = generate_candidate_outfit(grouped, layering_guidance)
         candidate_score = score_outfit(candidate_sections, weather)
         candidates.append((candidate_score, candidate_sections))
 
     candidates.sort(key=lambda entry: entry[0], reverse=True)
+    candidates = dedupe_ranked_candidates(candidates)
+
+    if not candidates:
+        return {
+            "name": "Generated Outfit",
+            "sections": {"outer": None, "top": None, "bottom": None},
+            "score": 0,
+            "weather": weather,
+            "reasons": ["No outfit candidates could be generated from current wardrobe constraints."],
+            "top_outfits": [],
+        }
 
     current_sections = normalize_selected_sections(selected_sections)
     best_score, best_sections = candidates[0]
@@ -174,8 +306,9 @@ def generate_outfit_payload(
         chosen_score = explained_score
 
     top_outfit_count = min(top_outfit_count, len(candidates))
+    top_candidates = select_diverse_top_candidates(candidates, top_outfit_count)
     top_outfits = []
-    for rank, (candidate_score, candidate_sections) in enumerate(candidates[:top_outfit_count], start=1):
+    for rank, (candidate_score, candidate_sections) in enumerate(top_candidates, start=1):
         explained, candidate_reasons = explain_outfit_score(candidate_sections, weather)
         top_outfits.append(
             {

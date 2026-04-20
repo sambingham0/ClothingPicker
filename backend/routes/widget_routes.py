@@ -15,6 +15,7 @@ router = APIRouter()
 
 class SpotifyControlRequest(BaseModel):
     action: str
+    volumePercent: Optional[int] = None
 
 
 def _utc_now_iso() -> str:
@@ -37,5 +38,9 @@ async def get_spotify_widget():
 
 @router.post("/widgets/spotify/control")
 async def post_spotify_control(payload: SpotifyControlRequest):
-    response_body, status_code = await asyncio.to_thread(execute_spotify_control_action, payload.action)
+    response_body, status_code = await asyncio.to_thread(
+        execute_spotify_control_action,
+        payload.action,
+        payload.volumePercent,
+    )
     return JSONResponse(content=response_body, status_code=status_code)

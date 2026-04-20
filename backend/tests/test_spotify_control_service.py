@@ -42,6 +42,23 @@ class SpotifyControlServiceTests(unittest.TestCase):
         self.assertEqual(payload["volumePercent"], 55)
         self.assertEqual(payload["message"], "Volume increased to 55%.")
 
+    @patch("services.spotify_control_service.spotify_api_request")
+    @patch("services.spotify_control_service.ensure_spotify_control_device")
+    def test_execute_control_action_volume_set_success(
+        self,
+        mock_ensure,
+        mock_request,
+    ):
+        mock_ensure.return_value = (True, None)
+        mock_request.return_value = (204, {}, None)
+
+        payload, status_code = spotify_control_service.execute_spotify_control_action("volume_set", 73)
+
+        self.assertEqual(status_code, 200)
+        self.assertEqual(payload["ok"], True)
+        self.assertEqual(payload["volumePercent"], 73)
+        self.assertEqual(payload["message"], "Volume set to 73%.")
+
     @patch("services.spotify_control_service.transfer_spotify_to_mac")
     def test_execute_control_action_transfer_here_uses_target_name(self, mock_transfer):
         mock_transfer.return_value = (204, None, "Sam Mac")

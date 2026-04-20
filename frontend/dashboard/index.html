@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Woodhouse</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -72,12 +73,15 @@
                     <div class="spotify-controls">
                         <div class="spotify-controls-row">
                             <button id="spotify-prev-btn" class="spotify-control-btn" type="button">Previous</button>
-                            <button id="spotify-toggle-btn" class="spotify-control-btn" type="button">Play</button>
                             <button id="spotify-next-btn" class="spotify-control-btn" type="button">Next</button>
-                            <button id="spotify-vol-down-btn" class="spotify-control-btn" type="button">Vol -</button>
                             <button id="spotify-transfer-btn" class="spotify-control-btn" type="button">Transfer</button>
-                            <button id="spotify-vol-up-btn" class="spotify-control-btn" type="button">Vol +</button>
+                            <button id="spotify-toggle-btn" class="spotify-control-btn" type="button">Play</button>
                         </div>
+                        <label class="spotify-volume-control" for="spotify-volume-slider">
+                            <span class="spotify-volume-label">Volume</span>
+                            <input id="spotify-volume-slider" class="spotify-volume-slider" type="range" min="0" max="100" step="1" value="50" />
+                            <output id="spotify-volume-value" class="spotify-volume-value" for="spotify-volume-slider">50%</output>
+                        </label>
                     </div>
                 </article>
 

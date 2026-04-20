@@ -388,7 +388,7 @@ button:disabled {
 
 .spotify-controls-row {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
 }
 
@@ -396,6 +396,33 @@ button:disabled {
     border-radius: 12px;
     padding: 9px 10px;
     font-size: 0.82rem;
+}
+
+.spotify-volume-control {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.spotify-volume-label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.spotify-volume-slider {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+.spotify-volume-value {
+    min-width: 3.5ch;
+    text-align: right;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 900px) {
@@ -414,6 +441,10 @@ button:disabled {
     }
 
     .weather-mini-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .spotify-controls-row {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -437,7 +468,7 @@ button:disabled {
     }
 
     .spotify-controls-row {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .log-feed {

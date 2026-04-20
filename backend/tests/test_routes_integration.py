@@ -46,13 +46,16 @@ class RouteIntegrationTests(TestCase):
 
         with patch(
             "routes.widget_routes.fetch_current_weather",
-            return_value={"temperatureC": 22},
+            return_value={"temperature_c": 22, "forecast": {"likely_to_rain_later_today": False}},
         ) as mock_weather:
             response = client.get("/widgets/weather?latitude=40.71&longitude=-74.00")
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        self.assertEqual(payload.get("weather"), {"temperatureC": 22})
+        self.assertEqual(
+            payload.get("weather"),
+            {"temperature_c": 22, "forecast": {"likely_to_rain_later_today": False}},
+        )
         self.assertIn("requestedAtUtc", payload)
         mock_weather.assert_called_once_with(40.71, -74.0)
 
@@ -71,6 +74,22 @@ class RouteIntegrationTests(TestCase):
             {"ok": False, "action": "pause", "message": "No active device."},
         )
         mock_execute.assert_called_once_with("pause")
+
+    def test_spotify_control_forwards_volume_percent(self):
+        client = self._client_for_router(widget_router)
+
+        with patch(
+            "routes.widget_routes.execute_spotify_control_action",
+            return_value=({"ok": True, "action": "volume_set", "volumePercent": 73}, 200),
+        ) as mock_execute:
+            response = client.post("/widgets/spotify/control", json={"action": "volume_set", "volumePercent": 73})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"ok": True, "action": "volume_set", "volumePercent": 73},
+        )
+        mock_execute.assert_called_once_with("volume_set", 73)
 
     def test_upload_route_parses_multipart_fields(self):
         client = self._client_for_router(clothing_router)

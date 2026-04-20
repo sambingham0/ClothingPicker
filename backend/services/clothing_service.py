@@ -1,12 +1,38 @@
+import hashlib
+import json
+import random
 import sqlite3 as sql
+import threading
+import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from fastapi import HTTPException, UploadFile
 
 from app_config import CLOTHING_DB_PATH, CLOTHING_STORAGE_DIR
 from outfit_generation import generate_outfit_payload
-from scoring.utils import split_csv_field
+from scoring.utils import split_csv_field, to_float
+
+
+OUTFIT_POOL_TOP_N = 25
+OUTFIT_POOL_CANDIDATE_COUNT = 180
+OUTFIT_POOL_TTL_SECONDS = 600
+
+
+@dataclass
+class OutfitPoolEntry:
+    top_outfits: List[dict]
+    weather: dict
+    expires_at: float
+    rotation: List[int]
+    rotation_cursor: int = 0
+    last_served_index: Optional[int] = None
+    refreshing: bool = False
+
+
+_outfit_pool_cache: Dict[Tuple[str, Optional[float], Optional[float]], OutfitPoolEntry] = {}
+_outfit_pool_lock = threading.Lock()
 
 
 def list_clothing_items():
@@ -33,6 +59,160 @@ def list_clothing_items():
         }
         for row in items
     ]
+
+
+def _sanitize_top_n(top_n: int) -> int:
+    try:
+        return max(1, min(int(top_n), OUTFIT_POOL_TOP_N))
+    except (TypeError, ValueError):
+        return 3
+
+
+def _normalize_location(
+    latitude: Optional[float], longitude: Optional[float]
+) -> Tuple[Optional[float], Optional[float]]:
+    lat = to_float(latitude)
+    lon = to_float(longitude)
+    return (
+        round(lat, 3) if lat is not None else None,
+        round(lon, 3) if lon is not None else None,
+    )
+
+
+def _compute_wardrobe_signature() -> str:
+    conn = sql.connect(str(CLOTHING_DB_PATH))
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, type, season, color, minor_color, sleeve_length, bottom_style, occasion
+            FROM clothing
+            ORDER BY id
+            """
+        )
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+
+    payload = json.dumps(rows, separators=(",", ":"))
+    return hashlib.sha1(payload.encode("utf-8")).hexdigest()
+
+
+def _build_pool_key(
+    latitude: Optional[float], longitude: Optional[float]
+) -> Tuple[str, Optional[float], Optional[float]]:
+    wardrobe_signature = _compute_wardrobe_signature()
+    lat_key, lon_key = _normalize_location(latitude, longitude)
+    return (wardrobe_signature, lat_key, lon_key)
+
+
+def _refresh_pool_payload(
+    latitude: Optional[float],
+    longitude: Optional[float],
+) -> dict:
+    return generate_outfit_payload(
+        candidate_count=OUTFIT_POOL_CANDIDATE_COUNT,
+        selected_sections=None,
+        top_n=OUTFIT_POOL_TOP_N,
+        latitude=latitude,
+        longitude=longitude,
+    )
+
+
+def _create_pool_entry(payload: dict, is_refreshing: bool = False) -> OutfitPoolEntry:
+    top_outfits = list(payload.get("top_outfits") or [])
+    if not top_outfits:
+        top_outfits = [
+            {
+                "rank": 1,
+                "score": payload.get("score", 0),
+                "sections": payload.get("sections") or {"outer": None, "top": None, "bottom": None},
+                "reasons": payload.get("reasons") or [],
+            }
+        ]
+
+    rotation = list(range(len(top_outfits)))
+    random.shuffle(rotation)
+
+    return OutfitPoolEntry(
+        top_outfits=top_outfits,
+        weather=payload.get("weather") or {},
+        expires_at=time.time() + OUTFIT_POOL_TTL_SECONDS,
+        rotation=rotation,
+        refreshing=is_refreshing,
+    )
+
+
+def _section_signature(sections: dict) -> Tuple[Optional[int], Optional[int], Optional[int]]:
+    return (
+        sections.get("outer"),
+        sections.get("top"),
+        sections.get("bottom"),
+    )
+
+
+def _pick_outfit_from_entry(entry: OutfitPoolEntry, selected_sections: dict) -> dict:
+    selected_signature = _section_signature(selected_sections)
+    total = len(entry.rotation)
+
+    if total == 0:
+        return {
+            "rank": 1,
+            "score": 0,
+            "sections": {"outer": None, "top": None, "bottom": None},
+            "reasons": ["No outfit candidates are available."],
+        }
+
+    for _ in range(total):
+        if entry.rotation_cursor >= total:
+            random.shuffle(entry.rotation)
+            entry.rotation_cursor = 0
+
+        rotation_slot = entry.rotation_cursor
+        index = entry.rotation[rotation_slot]
+        entry.rotation_cursor += 1
+
+        candidate = entry.top_outfits[index]
+        candidate_signature = _section_signature(candidate.get("sections") or {})
+
+        if entry.last_served_index is not None and index == entry.last_served_index and total > 1:
+            continue
+
+        if selected_signature == candidate_signature and total > 1:
+            continue
+
+        entry.last_served_index = index
+        return candidate
+
+    if entry.rotation_cursor >= total:
+        random.shuffle(entry.rotation)
+        entry.rotation_cursor = 0
+
+    fallback_index = entry.rotation[entry.rotation_cursor]
+    entry.rotation_cursor += 1
+    entry.last_served_index = fallback_index
+    return entry.top_outfits[fallback_index]
+
+
+def _start_background_refresh(
+    cache_key: Tuple[str, Optional[float], Optional[float]],
+    latitude: Optional[float],
+    longitude: Optional[float],
+) -> None:
+    def _refresh() -> None:
+        try:
+            payload = _refresh_pool_payload(latitude=latitude, longitude=longitude)
+            refreshed_entry = _create_pool_entry(payload, is_refreshing=False)
+            with _outfit_pool_lock:
+                _outfit_pool_cache[cache_key] = refreshed_entry
+        except Exception:
+            with _outfit_pool_lock:
+                existing = _outfit_pool_cache.get(cache_key)
+                if existing:
+                    existing.refreshing = False
+
+    thread = threading.Thread(target=_refresh, daemon=True)
+    thread.start()
 
 
 def _validate_upload_fields(
@@ -193,15 +373,76 @@ def generate_outfit(
     latitude: Optional[float],
     longitude: Optional[float],
 ):
+    requested_top_n = _sanitize_top_n(top_n)
     selected_sections = {
         "outer": selected_outer,
         "top": selected_top,
         "bottom": selected_bottom,
     }
 
-    return generate_outfit_payload(
-        selected_sections=selected_sections,
-        top_n=top_n,
-        latitude=latitude,
-        longitude=longitude,
-    )
+    cache_key = _build_pool_key(latitude=latitude, longitude=longitude)
+
+    with _outfit_pool_lock:
+        entry = _outfit_pool_cache.get(cache_key)
+
+    if entry is None:
+        try:
+            payload = _refresh_pool_payload(latitude=latitude, longitude=longitude)
+            built_entry = _create_pool_entry(payload, is_refreshing=False)
+        except Exception:
+            return generate_outfit_payload(
+                selected_sections=selected_sections,
+                top_n=requested_top_n,
+                latitude=latitude,
+                longitude=longitude,
+            )
+
+        with _outfit_pool_lock:
+            _outfit_pool_cache[cache_key] = built_entry
+            entry = built_entry
+
+    now = time.time()
+    needs_refresh = entry.expires_at <= now
+    if needs_refresh:
+        with _outfit_pool_lock:
+            latest = _outfit_pool_cache.get(cache_key)
+            if latest and latest.expires_at <= now and not latest.refreshing:
+                latest.refreshing = True
+                _start_background_refresh(
+                    cache_key=cache_key,
+                    latitude=latitude,
+                    longitude=longitude,
+                )
+
+    with _outfit_pool_lock:
+        entry = _outfit_pool_cache.get(cache_key)
+        if not entry:
+            return generate_outfit_payload(
+                selected_sections=selected_sections,
+                top_n=requested_top_n,
+                latitude=latitude,
+                longitude=longitude,
+            )
+
+        chosen = _pick_outfit_from_entry(entry, selected_sections)
+        ranked_top = []
+        for rank, item in enumerate(entry.top_outfits[:requested_top_n], start=1):
+            ranked_top.append(
+                {
+                    "rank": rank,
+                    "score": item.get("score", 0),
+                    "sections": item.get("sections") or {"outer": None, "top": None, "bottom": None},
+                    "reasons": item.get("reasons") or [],
+                }
+            )
+
+        weather = dict(entry.weather)
+
+    return {
+        "name": "Generated Outfit",
+        "sections": chosen.get("sections") or {"outer": None, "top": None, "bottom": None},
+        "score": chosen.get("score", 0),
+        "weather": weather,
+        "reasons": chosen.get("reasons") or [],
+        "top_outfits": ranked_top,
+    }

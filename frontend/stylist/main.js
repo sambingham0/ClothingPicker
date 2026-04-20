@@ -17,111 +17,39 @@ import {
     groupClothesBySection,
     enforceUniqueSelection
 } from './store.js';
+import { fetchJsonWithRetry } from './modules/requestClient.js';
+import { createAnalysisController } from './modules/analysisView.js';
+import { bindRotateControl } from './modules/rotateControl.js';
 
 const state = createState();
 
-const analysisElements = {
-    score: null,
-    weather: null,
-    reasons: null
-};
+const GENERATE_DEBOUNCE_MS = 220;
 
-function formatWeatherLine(weather) {
-    if (!weather || typeof weather !== 'object') {
-        return 'Weather unavailable; score is based on structure only.';
-    }
+let generateRequestPromise = null;
+let generateRequestQueued = false;
+let generateDebounceTimer = null;
+const analysisController = createAnalysisController();
 
-    const temperatureC = Number(weather.temperature_c);
-    const legacyTemperature = Number(weather.temperature);
-    const windKph = Number(weather.wind_kph);
-    const windGustKph = Number(weather.wind_gust_kph);
-    const legacyWindMph = Number(weather.wind_speed);
-    const precipitationMm = Number(weather.precipitation_mm);
-    const legacyPrecipitationIn = Number(weather.precipitation);
+function preloadClothingImages(groupedItems) {
+    if (!groupedItems || typeof groupedItems !== 'object') return;
 
-    const segments = [];
-    if (Number.isFinite(temperatureC)) {
-        const temperatureF = (temperatureC * 9) / 5 + 32;
-        segments.push(`Temp ${temperatureF.toFixed(0)}F`);
-    } else if (Number.isFinite(legacyTemperature)) {
-        segments.push(`Temp ${legacyTemperature.toFixed(0)}F`);
-    }
+    const preloadUrls = new Set();
+    Object.values(groupedItems).forEach(items => {
+        if (!Array.isArray(items)) return;
+        items.forEach(item => {
+            const imagePath = item && item.image_path;
+            if (typeof imagePath === 'string' && imagePath.trim()) {
+                preloadUrls.add(IMAGE_BASE_URL + imagePath);
+            }
+        });
+    });
 
-    if (Number.isFinite(windKph)) {
-        const windMph = windKph * 0.621371;
-        segments.push(`Wind ${windMph.toFixed(0)} mph`);
-    } else if (Number.isFinite(legacyWindMph)) {
-        segments.push(`Wind ${legacyWindMph.toFixed(0)} mph`);
-    }
-
-    if (Number.isFinite(windGustKph) && windGustKph > 0) {
-        const gustMph = windGustKph * 0.621371;
-        segments.push(`Gust ${gustMph.toFixed(0)} mph`);
-    }
-
-    if (Number.isFinite(precipitationMm)) {
-        if (precipitationMm > 0) {
-            segments.push(`Precip ${precipitationMm.toFixed(1)} mm`);
-        } else {
-            segments.push('No measurable precipitation');
-        }
-    } else if (Number.isFinite(legacyPrecipitationIn)) {
-        const rain = Number(weather.rain) || 0;
-        const snow = Number(weather.snowfall) || 0;
-        if (legacyPrecipitationIn > 0 || rain > 0 || snow > 0) {
-            segments.push(
-                `Precip ${legacyPrecipitationIn.toFixed(2)} in (rain ${rain.toFixed(2)}, snow ${snow.toFixed(2)})`
-            );
-        } else {
-            segments.push('No measurable precipitation');
-        }
-    } else {
-        segments.push('No measurable precipitation');
-    }
-
-    if (weather.band) {
-        segments.push(`Band ${String(weather.band)}`);
-    }
-
-    if (weather.source === 'fallback') {
-        segments.push('Using fallback weather');
-    }
-
-    return segments.join(' | ');
-}
-
-function renderAnalysis(payload) {
-    if (!analysisElements.score || !analysisElements.weather || !analysisElements.reasons) return;
-
-    const score = Number(payload && payload.score);
-    analysisElements.score.textContent = Number.isFinite(score)
-        ? `Score: ${score}`
-        : 'Score: unavailable';
-
-    analysisElements.weather.textContent = formatWeatherLine(payload ? payload.weather : null);
-
-    const reasons = Array.isArray(payload && payload.reasons) && payload.reasons.length
-        ? payload.reasons
-        : ['Reasons are not available yet.'];
-
-    analysisElements.reasons.replaceChildren();
-    reasons.forEach(reason => {
-        const li = document.createElement('li');
-        li.textContent = reason;
-        analysisElements.reasons.appendChild(li);
+    preloadUrls.forEach(src => {
+        const image = new Image();
+        image.src = src;
     });
 }
 
-function resetAnalysisForManualChanges() {
-    if (!analysisElements.score || !analysisElements.weather || !analysisElements.reasons) return;
-    analysisElements.score.textContent = 'Generated score no longer applies after changes.';
-    analysisElements.weather.textContent = 'Generate again to recalculate scoring.';
-    analysisElements.reasons.replaceChildren();
-
-    const li = document.createElement('li');
-    li.textContent = 'Press Generate Outfit to create a fresh recommendation.';
-    analysisElements.reasons.appendChild(li);
-}
 
 function formatMetadataValue(value) {
     if (Array.isArray(value)) {
@@ -180,9 +108,14 @@ function renderSection(sectionId) {
     if (!item) {
         slot.style.display = 'none';
         slot.removeAttribute('src');
+        delete slot.dataset.currentSrc;
         slot.alt = '';
     } else {
-        slot.src = IMAGE_BASE_URL + item.image_path;
+        const nextSrc = IMAGE_BASE_URL + item.image_path;
+        if (slot.dataset.currentSrc !== nextSrc) {
+            slot.src = nextSrc;
+            slot.dataset.currentSrc = nextSrc;
+        }
         slot.alt = item.type || 'Clothing item';
         slot.style.display = 'block';
     }
@@ -226,7 +159,7 @@ function getCurrentSectionsForGeneration() {
     );
 }
 
-async function generateOutfitFromServer() {
+async function generateOutfitOnce() {
     if (state.generateBtn) {
         state.generateBtn.disabled = true;
         state.generateBtn.textContent = 'Generating...';
@@ -241,17 +174,12 @@ async function generateOutfitFromServer() {
         if (typeof selected.bottom === 'number') query.set('selected_bottom', String(selected.bottom));
 
         const queryString = query.toString();
-        const response = await fetch(
+        const payload = await fetchJsonWithRetry(
             `${API_BASE_URL}/generate-outfit${queryString ? `?${queryString}` : ''}`
         );
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-            throw new Error(payload.detail || payload.message || `Request failed (${response.status})`);
-        }
 
         applyOutfitBySection(payload.sections || {});
-        renderAnalysis(payload);
+        analysisController.render(payload);
     } catch (error) {
         console.error('Error generating outfit:', error);
         alert(`Could not generate outfit: ${error.message || error}`);
@@ -263,13 +191,44 @@ async function generateOutfitFromServer() {
     }
 }
 
+async function generateOutfitFromServer() {
+    if (generateRequestPromise) {
+        generateRequestQueued = true;
+        return generateRequestPromise;
+    }
+
+    generateRequestPromise = generateOutfitOnce();
+
+    try {
+        await generateRequestPromise;
+    } finally {
+        generateRequestPromise = null;
+        if (generateRequestQueued) {
+            generateRequestQueued = false;
+            await generateOutfitFromServer();
+        }
+    }
+}
+
+function scheduleGenerateOutfit() {
+    if (generateDebounceTimer !== null) {
+        window.clearTimeout(generateDebounceTimer);
+    }
+
+    generateDebounceTimer = window.setTimeout(() => {
+        generateDebounceTimer = null;
+        void generateOutfitFromServer();
+    }, GENERATE_DEBOUNCE_MS);
+}
+
 function rotateSection(sectionId, direction) {
     state.generatedOutfitActive = false;
     state.generatedOutfit[sectionId] = null;
     const changed = rotateSectionState(state, sectionId, direction);
-    if (!changed) return;
-    resetAnalysisForManualChanges();
+    if (!changed) return false;
+    analysisController.resetForManualChanges();
     renderSections();
+    return true;
 }
 
 async function deleteCurrentItem(sectionId) {
@@ -289,18 +248,20 @@ async function deleteCurrentItem(sectionId) {
     renderSections();
 
     try {
-        const response = await fetch(`${CLOTHING_API_URL}/${item.id}`, {
-            method: 'DELETE'
-        });
-        const payload = await response.json().catch(() => ({}));
+        const payload = await fetchJsonWithRetry(
+            `${CLOTHING_API_URL}/${item.id}`,
+            {
+                method: 'DELETE'
+            }
+        );
 
-        if (!response.ok || !payload.deleted) {
-            const message = payload.status || `Request failed (${response.status})`;
+        if (!payload.deleted) {
+            const message = payload.status || 'Delete request did not complete successfully.';
             throw new Error(message);
         }
 
         removeCurrentItemFromSection(state, sectionId);
-        resetAnalysisForManualChanges();
+        analysisController.resetForManualChanges();
     } catch (error) {
         console.error('Error deleting clothing item:', error);
         alert(`Could not delete item: ${error.message || error}`);
@@ -315,12 +276,10 @@ function buildSections() {
     state.canvasSlots = {};
 
     state.generateBtn = document.getElementById('generate-outfit-btn');
-    analysisElements.score = document.getElementById('analysis-score');
-    analysisElements.weather = document.getElementById('analysis-weather');
-    analysisElements.reasons = document.getElementById('analysis-reasons');
+    analysisController.init();
 
     if (state.generateBtn) {
-        state.generateBtn.onclick = generateOutfitFromServer;
+        state.generateBtn.onclick = scheduleGenerateOutfit;
     }
 
     sectionConfig.forEach(cfg => {
@@ -351,8 +310,8 @@ function buildSections() {
             ])
         );
 
-        if (prevBtn) prevBtn.onclick = () => rotateSection(cfg.id, -1);
-        if (nextBtn) nextBtn.onclick = () => rotateSection(cfg.id, 1);
+        if (prevBtn) bindRotateControl(prevBtn, () => rotateSection(cfg.id, -1));
+        if (nextBtn) bindRotateControl(nextBtn, () => rotateSection(cfg.id, 1));
         if (deleteBtn) deleteBtn.onclick = () => deleteCurrentItem(cfg.id);
 
         state.sectionElements[cfg.id] = {
@@ -368,8 +327,10 @@ function buildSections() {
 
 async function loadClothingImages() {
     try {
-        const clothes = await fetch(CLOTHING_API_URL).then(res => res.json());
+        const clothes = await fetchJsonWithRetry(CLOTHING_API_URL);
+
         state.groupedItems = groupClothesBySection(clothes);
+        preloadClothingImages(state.groupedItems);
         enforceUniqueSelection(state);
         buildSections();
         if (Array.isArray(clothes) && clothes.length > 0) {

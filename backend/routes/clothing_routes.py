@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 
 from fastapi import APIRouter, File, Form, UploadFile
@@ -14,7 +15,7 @@ router = APIRouter()
 
 @router.get("/clothing")
 async def get_clothing():
-    return list_clothing_items()
+    return await asyncio.to_thread(list_clothing_items)
 
 
 @router.post("/upload")
@@ -29,22 +30,24 @@ async def upload_clothing(
     sleeveLength: Optional[str] = Form(None),
     bottomStyle: Optional[str] = Form(None),
 ):
-    return create_clothing_item(
-        file=file,
-        clothing_type=type,
-        major_colors=majorColors,
-        minor_colors=minorColors,
-        seasons=season,
-        occasions=occasion,
-        fit=fit,
-        sleeve_length=sleeveLength,
-        bottom_style=bottomStyle,
+    return await asyncio.to_thread(
+        lambda: create_clothing_item(
+            file=file,
+            clothing_type=type,
+            major_colors=majorColors,
+            minor_colors=minorColors,
+            seasons=season,
+            occasions=occasion,
+            fit=fit,
+            sleeve_length=sleeveLength,
+            bottom_style=bottomStyle,
+        )
     )
 
 
 @router.delete("/clothing/{clothing_id}")
 async def delete_clothing(clothing_id: int):
-    return delete_clothing_item(clothing_id)
+    return await asyncio.to_thread(delete_clothing_item, clothing_id)
 
 
 @router.get("/generate-outfit")
@@ -56,11 +59,13 @@ async def generate_outfit_route(
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
 ):
-    return generate_outfit(
-        selected_outer=selected_outer,
-        selected_top=selected_top,
-        selected_bottom=selected_bottom,
-        top_n=top_n,
-        latitude=latitude,
-        longitude=longitude,
+    return await asyncio.to_thread(
+        lambda: generate_outfit(
+            selected_outer=selected_outer,
+            selected_top=selected_top,
+            selected_bottom=selected_bottom,
+            top_n=top_n,
+            latitude=latitude,
+            longitude=longitude,
+        )
     )
