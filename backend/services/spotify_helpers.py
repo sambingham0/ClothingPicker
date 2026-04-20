@@ -1,12 +1,12 @@
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 from app_config import BASE_DIR
 
-DEFAULT_SPOTIFY_ENV_FILE = BASE_DIR.parent.parent / "VoiceAssistant" / ".env"
+SOURCE_SPOTIFY_ENV_FILE = BASE_DIR.parent.parent / "VoiceAssistant" / ".env"
+STAGED_SPOTIFY_ENV_FILE = Path(__file__).resolve().parents[3] / "voiceassistant.env"
 
 
 def utc_now_iso() -> str:
@@ -43,9 +43,11 @@ def _parse_dotenv_file(path: Path) -> dict[str, str]:
 
 
 def load_spotify_env_values() -> dict[str, str]:
-    configured_path = os.getenv("VOICEASSISTANT_ENV_FILE")
-    env_path = Path(configured_path).expanduser() if configured_path else DEFAULT_SPOTIFY_ENV_FILE
-    return _parse_dotenv_file(env_path)
+    for env_path in (SOURCE_SPOTIFY_ENV_FILE, STAGED_SPOTIFY_ENV_FILE):
+        if env_path.exists():
+            return _parse_dotenv_file(env_path)
+
+    return {}
 
 
 def _first_non_empty(*values: Optional[str]) -> Optional[str]:
@@ -61,18 +63,9 @@ def _first_non_empty(*values: Optional[str]) -> Optional[str]:
 def resolve_spotify_credentials() -> tuple[Optional[str], Optional[str], Optional[str]]:
     env_values = load_spotify_env_values()
 
-    client_id = _first_non_empty(
-        env_values.get("Spotify_ClientID"),
-        env_values.get("SPOTIFY_CLIENT_ID"),
-    )
-    client_secret = _first_non_empty(
-        env_values.get("Spotify_ClientSecret"),
-        env_values.get("SPOTIFY_CLIENT_SECRET"),
-    )
-    refresh_token = _first_non_empty(
-        env_values.get("Spotify_RefreshToken"),
-        env_values.get("SPOTIFY_REFRESH_TOKEN"),
-    )
+    client_id = _first_non_empty(env_values.get("Spotify_ClientID"))
+    client_secret = _first_non_empty(env_values.get("Spotify_ClientSecret"))
+    refresh_token = _first_non_empty(env_values.get("Spotify_RefreshToken"))
 
     return client_id, client_secret, refresh_token
 
@@ -112,14 +105,7 @@ def spotify_embed_url_from_uri(uri: Optional[str]) -> Optional[str]:
 
 
 def resolve_default_spotify_embed_url() -> Optional[str]:
-    env_values = load_spotify_env_values()
-    candidate = _first_non_empty(
-        env_values.get("VOICEASSISTANT_SPOTIFY_EMBED_URL"),
-        env_values.get("SPOTIFY_DASHBOARD_EMBED_URL"),
-        env_values.get("Spotify_DashboardEmbedUrl"),
-        env_values.get("Spotify_EmbedUrl"),
-    )
-    return spotify_embed_url_from_uri(candidate)
+    return None
 
 
 def decode_spotify_error(raw_text: str, fallback: str) -> str:
@@ -156,10 +142,7 @@ def decode_spotify_error(raw_text: str, fallback: str) -> str:
 
 def resolve_spotify_preferred_device_name() -> Optional[str]:
     env_values = load_spotify_env_values()
-    return _first_non_empty(
-        env_values.get("VOICEASSISTANT_SPOTIFY_PREFERRED_DEVICE"),
-        env_values.get("Spotify_PreferredDeviceName"),
-    )
+    return _first_non_empty(env_values.get("VOICEASSISTANT_SPOTIFY_PREFERRED_DEVICE"))
 
 
 def is_spotify_computer_device(device: dict[str, object]) -> bool:

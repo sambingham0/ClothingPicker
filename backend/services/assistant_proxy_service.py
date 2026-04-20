@@ -1,9 +1,8 @@
 import asyncio
 import json
-import os
 from urllib.request import Request, urlopen
 
-ASSISTANT_BASE_URL = os.getenv("VOICEASSISTANT_BASE_URL", "http://127.0.0.1:7181").rstrip("/")
+ASSISTANT_BASE_URL = "http://127.0.0.1:7181"
 
 
 def fetch_assistant_json(path: str, timeout: float = 2.0):
