@@ -1,4 +1,6 @@
 storage
+*.jpeg
+*.png
 *.db
 __pycache__/
 *.py[cod]

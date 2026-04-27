@@ -162,7 +162,7 @@ function getCurrentSectionsForGeneration() {
 async function generateOutfitOnce() {
     if (state.generateBtn) {
         state.generateBtn.disabled = true;
-        state.generateBtn.textContent = 'Generating...';
+        state.generateBtn.classList.add('loading');
     }
 
     try {
@@ -186,7 +186,7 @@ async function generateOutfitOnce() {
     } finally {
         if (state.generateBtn) {
             state.generateBtn.disabled = false;
-            state.generateBtn.textContent = 'Generate Outfit';
+            state.generateBtn.classList.remove('loading');
         }
     }
 }

@@ -9,34 +9,52 @@
 </head>
 <body>
     <nav>
-        <a href="../stylist/index.html">Stylist</a>
-        <a href="../upload/index.html">Upload</a>
-        <a href="../dashboard/index.html">Dashboard</a>
+        <a href="../stylist/index.html" class="nav-btn">
+            <img src="./interface-images/nav-stylist.png" alt="Clothing Picker logo" class="nav-logo">
+        </a>
+        <a href="../upload/index.html" class="nav-btn">
+            <img src="./interface-images/nav-upload.png" alt="Upload icon" class="nav-icon">
+        </a>
+        <a href="../dashboard/index.html" class="nav-btn">
+            <img src="./interface-images/nav-dashboard.png" alt="Dashboard icon" class="nav-icon">
+        </a>
     </nav>
     <main class="page">
-        <h1>Build Your Outfit</h1>
-        <p class="subtitle">Use the arrows to cycle through saved items for each piece.</p>
         <div class="outfit-actions" aria-label="Outfit actions">
-            <button id="generate-outfit-btn" class="action-btn" type="button">Generate Outfit</button>
+            <button id="generate-outfit-btn" class="action-btn" type="button">
+                <img src="./interface-images/generate.jpeg" alt="Generate outfit icon">
+            </button>
         </div>
         <section id="outfit-stack" aria-live="polite">
             <section class="outfit-canvas" aria-label="Outfit preview">
                 <img class="canvas-layer" data-section-id="bottom" alt="">
                 <div class="canvas-toggle-group" data-section-id="bottom">
-                    <button class="toggle-btn canvas-toggle-btn" data-action="prev" type="button" aria-label="Previous Bottom item">‹</button>
-                    <button class="toggle-btn canvas-toggle-btn" data-action="next" type="button" aria-label="Next Bottom item">›</button>
+                    <button class="toggle-btn canvas-toggle-btn" data-action="prev" type="button" aria-label="Previous Bottom item">
+                        <img src="./interface-images/left-toggle.jpeg" alt="Left toggle icon">
+                    </button>
+                    <button class="toggle-btn canvas-toggle-btn" data-action="next" type="button" aria-label="Next Bottom item">
+                        <img src="./interface-images/right-toggle.jpeg" alt="Right toggle icon">
+                    </button>
                 </div>
 
                 <img class="canvas-layer" data-section-id="top" alt="">
                 <div class="canvas-toggle-group" data-section-id="top">
-                    <button class="toggle-btn canvas-toggle-btn" data-action="prev" type="button" aria-label="Previous Top item">‹</button>
-                    <button class="toggle-btn canvas-toggle-btn" data-action="next" type="button" aria-label="Next Top item">›</button>
+                    <button class="toggle-btn canvas-toggle-btn" data-action="prev" type="button" aria-label="Previous Top item">
+                        <img src="./interface-images/left-toggle.jpeg" alt="Left toggle icon">
+                    </button>
+                    <button class="toggle-btn canvas-toggle-btn" data-action="next" type="button" aria-label="Next Top item">
+                        <img src="./interface-images/right-toggle.jpeg" alt="Right toggle icon">
+                    </button>
                 </div>
 
                 <img class="canvas-layer" data-section-id="outer" alt="">
                 <div class="canvas-toggle-group" data-section-id="outer">
-                    <button class="toggle-btn canvas-toggle-btn" data-action="prev" type="button" aria-label="Previous Top Layer item">‹</button>
-                    <button class="toggle-btn canvas-toggle-btn" data-action="next" type="button" aria-label="Next Top Layer item">›</button>
+                    <button class="toggle-btn canvas-toggle-btn" data-action="prev" type="button" aria-label="Previous Top Layer item">
+                        <img src="./interface-images/left-toggle.jpeg" alt="Left toggle icon">
+                    </button>
+                    <button class="toggle-btn canvas-toggle-btn" data-action="next" type="button" aria-label="Next Top Layer item">
+                        <img src="./interface-images/right-toggle.jpeg" alt="Right toggle icon">
+                    </button>
                 </div>
             </section>
 
