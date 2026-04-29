@@ -345,8 +345,8 @@ export function renderWeather(elements, payload, errorMessage = null) {
   const precipitationMm = toFiniteNumber(weather.precipitation_mm);
   const precipText = describePrecipitationDisplay(weather, precipitationMm);
 
-  const checkedAt = formatTimestampWithRelative(payload.requestedAtUtc);
-  const skySummaryRaw = describeSkyCondition(weather.weather_code, weather.is_rainy);
+  const checkedAt = formatTimestamp(weather.fetched_at_utc || payload.requestedAtUtc);
+  const skySummaryRaw = describeSkyCondition(weather.weather_code, weather.is_rainy, weather.is_day);
   const skySummary = skySummaryRaw === 'clear' ? 'sunny' : skySummaryRaw;
   const tempSummary = describeTemperatureCondition(temperatureF);
   const windSummaryRaw = describeWindSummaryCondition(windKph, gustKph);
@@ -363,5 +363,5 @@ export function renderWeather(elements, payload, errorMessage = null) {
   setText(elements.weatherTemp, temperatureText);
   setText(elements.weatherWind, windText);
   setText(elements.weatherPrecip, precipText);
-  setText(elements.weatherUpdated, checkedAt);
+  setText(elements.weatherUpdated, `Fetched: ${checkedAt}`);
 }

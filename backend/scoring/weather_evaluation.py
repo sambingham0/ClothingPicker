@@ -9,6 +9,29 @@ TARGET_SEASONS = {
     "very_cold": {"winter"},
 }
 
+SEASON_PROFILES = {
+    "hot": {
+        "preferred": {"summer"},
+        "conflicting": {"fall", "autumn", "winter"},
+    },
+    "warm": {
+        "preferred": {"spring", "summer"},
+        "conflicting": {"winter"},
+    },
+    "mild": {
+        "preferred": {"spring", "fall", "autumn"},
+        "conflicting": {"winter"},
+    },
+    "cold": {
+        "preferred": {"fall", "autumn", "winter"},
+        "conflicting": {"spring", "summer"},
+    },
+    "very_cold": {
+        "preferred": {"winter"},
+        "conflicting": {"spring", "summer", "fall", "autumn"},
+    },
+}
+
 SNOW_WEATHER_CODES = {71, 73, 75, 77, 85, 86}
 
 
@@ -25,34 +48,107 @@ def _is_currently_snowing(weather):
     except (TypeError, ValueError):
         return False
 
+
+def _season_set(item):
+    return set(list_tokens((item or {}).get("seasons")))
+
+
+def _format_seasons(seasons):
+    return ", ".join(sorted(seasons))
+
+
+def _score_section_seasons(section_name, item, band):
+    seasons = _season_set(item)
+    if not seasons:
+        return 0, []
+
+
+    profile = SEASON_PROFILES.get(band, {})
+    preferred = profile.get("preferred", set())
+    conflicting = profile.get("conflicting", set())
+    seasons_text = _format_seasons(seasons)
+
+    if seasons & preferred:
+        if section_name == "outer" and band in {"cold", "very_cold"}:
+            bonus = 2
+        else:
+            bonus = 1
+        return bonus, [f"(+{bonus} pts) {section_name.capitalize()} seasonal match ({seasons_text})."]
+
+
+    if seasons & conflicting:
+        if section_name == "outer":
+            penalty = -4 if band in {"hot", "very_cold"} else -3
+        else:
+            penalty = -3 if band in {"cold", "very_cold"} else -2
+        return penalty, [f"({penalty} pts) {section_name.capitalize()} season ({seasons_text}) does not align with {band} weather."]
+
+
+    return 0, []
+
+
 def _score_hot_weather(top, bottom, outer):
     score = 0
     reasons = []
 
+
+    outer_seasons = _season_set(outer)
     if outer:
-        score -= 4
-        reasons.append("(-4 pts) Hot: wearing a layer is uncomfortable in this heat.")
+        if outer_seasons & {"summer", "spring"}:
+            score -= 1
+            reasons.append("(-1 pt) Hot: a light outer layer is a small compromise, but still okay if it is truly light.")
+        elif outer_seasons & {"fall", "autumn", "winter"}:
+            score -= 4
+            reasons.append("(-4 pts) Hot: this outer layer looks too heavy for hot weather.")
+        else:
+            score -= 2
+            reasons.append("(-2 pts) Hot: an outer layer is usually unnecessary in this heat.")
     else:
         score += 3
         reasons.append("(+3 pts) Hot: keeping it light is best.")
 
+
+    top_seasons = _season_set(top)
     sleeve = normalize_token((top or {}).get("sleeve_length"))
     if sleeve == "short_sleeve":
         score += 3
         reasons.append("(+3 pts) Hot: short sleeves are perfect.")
+        if top_seasons & {"summer"}:
+            score += 1
+            reasons.append("(+1 pt) Hot: the top is also marked for summer.")
     elif sleeve == "long_sleeve":
-        score -= 2
-        reasons.append("(-2 pts) Hot: long sleeves may be too warm.")
+        if top_seasons & {"summer", "spring"}:
+            score -= 1
+            reasons.append("(-1 pt) Hot: a lightweight long sleeve can work, but short sleeves are still better.")
+        elif top_seasons & {"fall", "autumn", "winter"}:
+            score -= 3
+            reasons.append("(-3 pts) Hot: this long sleeve looks too seasonal for hot weather.")
+        else:
+            score -= 2
+            reasons.append("(-2 pts) Hot: long sleeves may be too warm.")
 
+
+    bottom_seasons = _season_set(bottom)
     bottom_style = normalize_token((bottom or {}).get("bottom_style"))
     if bottom_style == "shorts":
         score += 3
         reasons.append("(+3 pts) Hot: shorts are a great choice.")
+        if bottom_seasons & {"summer"}:
+            score += 1
+            reasons.append("(+1 pt) Hot: the shorts are also marked for summer.")
     elif bottom_style == "pants":
-        score -= 1
-        reasons.append("(-1 pt) Hot: pants might feel warm.")
+        if bottom_seasons & {"summer", "spring"}:
+            score -= 1
+            reasons.append("(-1 pt) Hot: lightweight pants can work, but they are still warmer than shorts.")
+        elif bottom_seasons & {"fall", "autumn", "winter"}:
+            score -= 2
+            reasons.append("(-2 pts) Hot: these pants look more cold-weather oriented.")
+        else:
+            score -= 1
+            reasons.append("(-1 pt) Hot: pants might feel warm.")
 
     return score, reasons
+
 
 def _score_warm_or_mild_weather(top, bottom, outer, band, weather):
     score = 0
@@ -63,7 +159,7 @@ def _score_warm_or_mild_weather(top, bottom, outer, band, weather):
     needs_protection = is_rainy or is_windy
 
     if outer:
-        seasons = set(list_tokens(outer.get("seasons")))
+        seasons = _season_set(outer)
         is_winter_layer = "winter" in seasons
         is_cool_weather_layer = bool(seasons & {"fall", "autumn", "winter"})
 
@@ -134,67 +230,94 @@ def _score_warm_or_mild_weather(top, bottom, outer, band, weather):
 
     return score, reasons
 
+
 def _score_cold_weather(top, bottom, outer):
     score = 0
     reasons = []
 
+    outer_seasons = _season_set(outer)
     if outer:
         score += 3
         reasons.append("(+3 pts) Cold: glad you chose a layer.")
+        if outer_seasons & {"fall", "autumn", "winter"}:
+            score += 2
+            reasons.append("(+2 pts) Cold: the outer layer is seasonal for colder weather.")
     else:
         score -= 2
         reasons.append("(-2 pts) Cold: missing a warm outer layer.")
 
+    top_seasons = _season_set(top)
     sleeve = normalize_token((top or {}).get("sleeve_length"))
     if sleeve == "long_sleeve":
         score += 3
         reasons.append("(+3 pts) Cold: long sleeves for extra warmth.")
+        if top_seasons & {"fall", "autumn", "winter"}:
+            score += 1
+            reasons.append("(+1 pt) Cold: the top is also marked for colder seasons.")
     elif sleeve == "short_sleeve":
         score -= 2
         reasons.append("(-2 pts) Cold: short sleeves might be chilly.")
 
+    bottom_seasons = _season_set(bottom)
     bottom_style = normalize_token((bottom or {}).get("bottom_style"))
     if bottom_style == "pants":
         score += 3
         reasons.append("(+3 pts) Cold: pants are better for the low temps.")
+        if bottom_seasons & {"fall", "autumn", "winter"}:
+            score += 1
+            reasons.append("(+1 pt) Cold: the pants are also marked for colder seasons.")
     elif bottom_style == "shorts":
         score -= 3
-        reasons.append("(-3 pts) Cold: it'\''s too cold for shorts.")
+        reasons.append("(-3 pts) Cold: it's too cold for shorts.")
 
     return score, reasons
+
 
 def _score_very_cold_weather(top, bottom, outer):
     score = 0
     reasons = []
 
+    outer_seasons = _season_set(outer)
     if outer:
         score += 4
         reasons.append("(+4 pts) Freezing: a heavy layer is a must.")
+        if outer_seasons & {"winter"}:
+            score += 2
+            reasons.append("(+2 pts) Freezing: the outer layer is winter-rated.")
     else:
         score -= 4
         reasons.append("(-4 pts) Freezing: missing a warm outer layer.")
 
+    top_seasons = _season_set(top)
     sleeve = normalize_token((top or {}).get("sleeve_length"))
     if sleeve == "long_sleeve":
         score += 4
         reasons.append("(+4 pts) Freezing: long sleeves are necessary.")
+        if top_seasons & {"winter"}:
+            score += 1
+            reasons.append("(+1 pt) Freezing: the top is also marked for winter.")
     elif sleeve == "short_sleeve":
         score -= 3
         reasons.append("(-3 pts) Freezing: short sleeves are too cold.")
 
+    bottom_seasons = _season_set(bottom)
     bottom_style = normalize_token((bottom or {}).get("bottom_style"))
     if bottom_style == "pants":
         score += 4
         reasons.append("(+4 pts) Freezing: pants are strongly suggested.")
+        if bottom_seasons & {"winter"}:
+            score += 1
+            reasons.append("(+1 pt) Freezing: the pants are also winter-rated.")
     elif bottom_style == "shorts":
         score -= 4
-        reasons.append("(-4 pts) Freezing: it'\''s far too cold for shorts.")
+        reasons.append("(-4 pts) Freezing: it's far too cold for shorts.")
 
     if outer and sleeve == "long_sleeve" and bottom_style == "pants":
         score += 3
         reasons.append("(+3 pts) Bundle up! Heavy coverage bonus.")
 
     return score, reasons
+
 
 def score_weather(outfit_sections, weather):
     top = (outfit_sections or {}).get("top")
@@ -391,22 +514,14 @@ def score_weather(outfit_sections, weather):
             score -= 1
             reasons.append("(-1 pt) Forecast: thunderstorms tonight suggest carrying a layer.")
 
-    target_seasons = TARGET_SEASONS.get(band, set())
-    if target_seasons:
-        for section_name in ("top", "bottom", "outer"):
-            item = (outfit_sections or {}).get(section_name)
-            if not item:
-                continue
-            seasons = set(list_tokens(item.get("seasons")))
-            if not seasons:
-                continue
-            if seasons & target_seasons:
-                score += 1
-                reasons.append(f"(+1 pt) {section_name.capitalize()} seasonal match ({band}).")
-            else:
-                score -= 2
-                reasons.append(
-                    f"(-2 pts) {section_name.capitalize()} season ({', '.join(seasons)}) does not align with {band} weather."
-                )
+
+    for section_name in ("top", "bottom", "outer"):
+        item = (outfit_sections or {}).get(section_name)
+        if not item:
+            continue
+        delta, detail = _score_section_seasons(section_name, item, band)
+        score += delta
+        reasons.extend(detail)
+
 
     return score, reasons

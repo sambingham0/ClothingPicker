@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import datetime
+from datetime import timezone
 from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -37,17 +38,16 @@ def _shift_band_colder(band, steps=1):
     safe_steps = max(1, int(steps))
     return BAND_ORDER[max(0, index - safe_steps)]
 
-
 def _temperature_only_band(temperature_c):
     if temperature_c is None:
         return "mild"
     if temperature_c < 0:
         return "very_cold"
-    if temperature_c < 10:
+    if temperature_c < 8:
         return "cold"
-    if temperature_c < 22:
+    if temperature_c < 16:
         return "mild"
-    if temperature_c < 28:
+    if temperature_c < 25:
         return "warm"
     return "hot"
 
@@ -218,7 +218,6 @@ def resolve_weather_band(weather):
     if has_precipitation_cooling:
         exposure_points += 1
 
-    # Keep temperature as the primary signal, but nudge colder when wind/wet exposure is high.
     if base_band == "mild":
         if (temperature_c <= 12 and exposure_points >= 1) or (temperature_c <= 16 and exposure_points >= 2):
             return _shift_band_colder(base_band)
@@ -255,7 +254,7 @@ def fetch_current_weather(latitude=None, longitude=None):
         {
             "latitude": lat,
             "longitude": lon,
-            "current": "temperature_2m,precipitation,wind_speed_10m,wind_gusts_10m,weather_code",
+            "current": "temperature_2m,precipitation,wind_speed_10m,wind_gusts_10m,weather_code,is_day",
             "hourly": "precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m",
             "timezone": "auto",
             "forecast_days": 2,
@@ -268,10 +267,12 @@ def fetch_current_weather(latitude=None, longitude=None):
             payload = json.loads(response.read().decode("utf-8"))
 
         current = payload.get("current", {})
+        fetched_at_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         weather_code = int(current.get("weather_code", -1))
         precipitation_mm = to_float(current.get("precipitation")) or 0.0
         wind_kph = to_float(current.get("wind_speed_10m")) or 0.0
         wind_gust_kph = to_float(current.get("wind_gusts_10m")) or 0.0
+        is_day_value = to_float(current.get("is_day"))
         forecast_summary = _summarize_forecast_from_payload(payload)
 
         weather = {
@@ -280,13 +281,15 @@ def fetch_current_weather(latitude=None, longitude=None):
             "wind_kph": wind_kph,
             "wind_gust_kph": wind_gust_kph,
             "weather_code": weather_code,
+            "is_day": None if is_day_value is None else is_day_value >= 0.5,
             "is_rainy": weather_code in RAINY_WEATHER_CODES or precipitation_mm > 0.1,
             "is_windy": max(wind_kph, wind_gust_kph) >= 16,
             "forecast": forecast_summary,
             "source": "open-meteo",
+            "fetched_at_utc": fetched_at_utc,
+            "observed_at": current.get("time"),
         }
         weather["band"] = resolve_weather_band(weather)
-        
         # Save to cache
         _weather_cache[cache_key] = (weather, now)
         return weather
@@ -297,10 +300,13 @@ def fetch_current_weather(latitude=None, longitude=None):
             "wind_kph": 0.0,
             "wind_gust_kph": 0.0,
             "weather_code": None,
+            "is_day": None,
             "is_rainy": False,
             "is_windy": False,
             "forecast": _default_forecast_summary(),
             "source": "fallback",
+            "fetched_at_utc": None,
+            "observed_at": None,
         }
         fallback["band"] = resolve_weather_band(fallback)
         return fallback

@@ -135,14 +135,14 @@ export function describeTemperatureCondition(temperatureF) {
   return 'hot';
 }
 
-export function describeSkyCondition(weatherCode, isRainy) {
+export function describeSkyCondition(weatherCode, isRainy, isDay = null) {
   const code = toFiniteNumber(weatherCode);
   if (code === null) {
     return isRainy ? 'rainy' : 'conditions unclear';
   }
 
-  if (code === 0) return 'clear';
-  if (code === 1) return 'mostly clear';
+  if (code === 0) return isDay === false ? 'clear night' : 'clear';
+  if (code === 1) return isDay === false ? 'mostly clear night' : 'mostly clear';
   if (code === 2) return 'partly cloudy';
   if (code === 3) return 'cloudy';
 

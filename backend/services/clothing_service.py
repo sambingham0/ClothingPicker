@@ -15,9 +15,9 @@ from outfit_generation import generate_outfit_payload
 from scoring.utils import split_csv_field, to_float
 
 
-OUTFIT_POOL_TOP_N = 25
-OUTFIT_POOL_CANDIDATE_COUNT = 180
-OUTFIT_POOL_TTL_SECONDS = 600
+OUTFIT_POOL_TOP_N = 50
+OUTFIT_POOL_CANDIDATE_COUNT = 250
+OUTFIT_POOL_TTL_SECONDS = 300
 
 
 @dataclass

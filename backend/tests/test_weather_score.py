@@ -1,13 +1,21 @@
+import json
 import unittest
+from urllib.parse import parse_qs, urlparse
+from unittest.mock import patch
 
+import scoring.weather_score as weather_score
 from scoring.weather_score import (
     get_layering_guidance,
+    fetch_current_weather,
     resolve_weather_band,
     _summarize_forecast_from_payload,
 )
 
 
 class WeatherScoreTests(unittest.TestCase):
+    def tearDown(self):
+        weather_score._weather_cache.clear()
+
     def test_resolve_weather_band_keeps_mild_in_calm_conditions(self):
         weather = {
             "temperature_c": 11.0,
@@ -149,6 +157,58 @@ class WeatherScoreTests(unittest.TestCase):
         self.assertEqual(summary["max_rain_chance_percent_later_today"], 0)
         self.assertEqual(summary["rain_chance_percent_next_2_hours"], 0)
         self.assertEqual(summary["peak_wind_kph_later_today"], 0.0)
+
+    def test_fetch_current_weather_includes_fetched_at_and_is_day(self):
+        payload = {
+            "current": {
+                "time": "2026-04-15T23:00:00-06:00",
+                "temperature_2m": 12.5,
+                "precipitation": 0.0,
+                "wind_speed_10m": 4.0,
+                "wind_gusts_10m": 6.0,
+                "weather_code": 0,
+                "is_day": 0,
+            },
+            "hourly": {
+                "time": [],
+                "precipitation": [],
+                "precipitation_probability": [],
+                "weather_code": [],
+                "wind_speed_10m": [],
+                "wind_gusts_10m": [],
+            },
+        }
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def read(self):
+                return json.dumps(payload).encode("utf-8")
+
+        captured = {}
+
+        def fake_urlopen(url, timeout):
+            captured["url"] = url
+            captured["timeout"] = timeout
+            return FakeResponse()
+
+        with patch("scoring.weather_score.urlopen", side_effect=fake_urlopen):
+            weather = fetch_current_weather(40.71, -74.0)
+
+        self.assertEqual(weather["is_day"], False)
+        self.assertEqual(weather["observed_at"], payload["current"]["time"])
+        self.assertTrue(weather["fetched_at_utc"])
+        self.assertEqual(weather["band"], "mild")
+
+        query = parse_qs(urlparse(captured["url"]).query)
+        self.assertEqual(
+            query["current"][0],
+            "temperature_2m,precipitation,wind_speed_10m,wind_gusts_10m,weather_code,is_day",
+        )
 
     def test_layering_guidance_increases_when_rain_or_wind_is_likely_later(self):
         base_weather = {

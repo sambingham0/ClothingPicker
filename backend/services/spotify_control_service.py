@@ -8,7 +8,7 @@ from services.spotify_device_service import (
 )
 from services.spotify_helpers import utc_now_iso
 
-SPOTIFY_VOLUME_STEP_PERCENT = 5
+SPOTIFY_VOLUME_STEP_PERCENT = 10
 
 
 TRANSPORT_ACTIONS = {"play", "pause", "next", "previous"}

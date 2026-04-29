@@ -9,6 +9,7 @@ from scoring.weather_score import fetch_current_weather, get_layering_guidance
 
 
 OUTFIT_SECTION_IDS = ("outer", "top", "bottom")
+MAX_TOP_OUTFITS = 25
 
 
 def generate_candidate_outfit(grouped, layering_guidance):
@@ -202,7 +203,7 @@ def generate_outfit_payload(
         candidate_total = 30
 
     try:
-        top_outfit_count = max(1, min(int(top_n), 10))
+        top_outfit_count = max(1, min(int(top_n), MAX_TOP_OUTFITS))
     except (TypeError, ValueError):
         top_outfit_count = 3
 

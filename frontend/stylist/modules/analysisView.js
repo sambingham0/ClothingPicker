@@ -41,6 +41,30 @@ function describeRainChance(forecast) {
     return null;
 }
 
+function describeSkyCondition(weatherCode, isRainy, isDay) {
+    const code = Number(weatherCode);
+    if (!Number.isFinite(code)) {
+        return isRainy ? 'rainy' : 'conditions unclear';
+    }
+
+    if (code === 0) return isDay === false ? 'clear night' : 'clear';
+    if (code === 1) return isDay === false ? 'mostly clear night' : 'mostly clear';
+    if (code === 2) return 'partly cloudy';
+    if (code === 3) return 'cloudy';
+
+    if (code === 45 || code === 48) return 'foggy';
+
+    if (code === 51 || code === 53 || code === 55 || code === 56 || code === 57) return 'drizzly';
+    if (code === 61 || code === 63 || code === 65 || code === 66 || code === 67) return 'rainy';
+    if (code === 80 || code === 81 || code === 82) return 'showery';
+
+    if (code === 71 || code === 73 || code === 75 || code === 77 || code === 85 || code === 86) return 'snowy';
+
+    if (code === 95 || code === 96 || code === 99) return 'stormy';
+
+    return isRainy ? 'rainy' : 'cloudy';
+}
+
 function formatWeatherLine(weather) {
     if (!weather || typeof weather !== 'object') {
         return 'Weather unavailable; score is based on structure only.';
@@ -56,6 +80,8 @@ function formatWeatherLine(weather) {
     const forecast = weather && typeof weather === 'object' ? weather.forecast : null;
 
     const rainChanceText = describeRainChance(forecast);
+    const fetchedAtText = weather.fetched_at_utc ? new Date(weather.fetched_at_utc).toLocaleString() : null;
+    const skySummary = describeSkyCondition(weather.weather_code, weather.is_rainy, weather.is_day);
 
     const segments = [];
     if (Number.isFinite(temperatureC)) {
@@ -97,12 +123,18 @@ function formatWeatherLine(weather) {
         segments.push(rainChanceText || 'No measurable precipitation');
     }
 
+    segments.push(skySummary);
+
     if (weather.band) {
         segments.push(`Band ${String(weather.band)}`);
     }
 
     if (weather.source === 'fallback') {
         segments.push('Using fallback weather');
+    }
+
+    if (fetchedAtText) {
+        segments.push(`Fetched ${fetchedAtText}`);
     }
 
     return segments.join(' | ');
